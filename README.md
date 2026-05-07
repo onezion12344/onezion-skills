@@ -162,6 +162,18 @@ Triggers: "search chats", "find message", "chat history", "聊天记录查询"
 
 ---
 
+### 📦 OneZion-Migrate
+
+**Agent migration toolkit — pack your entire AI environment into a portable zip.**
+
+Got a new Agent platform? Don't rebuild from scratch. This skill exports your Skills, MCP config, Memory, chat history, and API keys into a single zip file. Import it into any WorkBuddy instance (or feed the README to any AI Agent) and you're back up in minutes. Supports dual-layer chat export: raw JSONL for deep search + LLMWiki simplified version for quick overview.
+
+```text
+Triggers: "migrate", "export agent", "backup", "pack environment", "上云", "迁移"
+```
+
+---
+
 ## What's NOT Included
 
 Skills that are excluded because they contain personal config, HKU-specific integrations, or API keys:
