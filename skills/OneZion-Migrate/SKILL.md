@@ -2,9 +2,10 @@
 name: OneZion-Migrate
 description: >
   Agent 迁移工具。将当前 WorkBuddy 环境打包为可移植 zip 包，包含 Skills、MCP 配置、Memory、聊天记录、API 密钥，
-  以便一键迁移到任意 Agent 平台（OpenClaw、Codex、Manus、Claude Code 等）。
+  以便一键迁移到任意 Agent 平台（Hermes Agent、OpenClaw、Codex、Manus、Claude Code 等）。
   也支持反向操作：从 zip 包恢复环境到新的 WorkBuddy 实例。
-  触发词：迁移、migrate、打包、备份 Agent、export agent、import agent、上云、cloud deploy。
+  内置 Hermes Agent 迁移支持（`hermes claw migrate`）和消息网关配置（Telegram/WhatsApp/微信）。
+  触发词：迁移、migrate、打包、备份 Agent、export agent、import agent、上云、cloud deploy、hermes、gateway。
 agent_created: true
 allowed-tools:
   - Bash
@@ -133,9 +134,130 @@ bash /Users/onezion12344/.workbuddy/skills/OneZion-Migrate/scripts/export_agent.
 }
 ```
 
+## 平台迁移指南
+
+### 迁移到 Hermes Agent（⭐ 推荐）
+
+Hermes Agent 是 Nous Research 出品的自进化 Agent 平台，内置 OpenClaw 迁移命令：
+
+```bash
+# 预览（不动手，只看会迁移什么）
+hermes claw migrate --dry-run
+
+# 正式迁移（skills + memory + API keys + 消息平台配置 全部迁移）
+hermes claw migrate
+
+# 只迁移 skills + memory（跳过 API keys）
+hermes claw migrate --preset user-data
+
+# 覆盖已有的同名配置
+hermes claw migrate --overwrite
+```
+
+迁移内容：
+- SOUL.md → Hermes 人设配置
+- MEMORY.md / USER.md → Hermes 记忆系统
+- Skills → Hermes skill 目录（onezion-* skills 可直接搬过去）
+- API keys → Hermes provider 配置（OpenRouter、Telegram 等）
+- 消息平台 → Hermes gateway 配置
+
+**对比 WorkBuddy zip 迁移 vs Hermes 迁移**：
+| | WorkBuddy zip 包 | Hermes `hermes claw migrate` |
+|---|---|---|
+| 迁移范围 | 全量（skills + memory + 密钥 + 聊天记录） | skills + memory + 密钥 + 消息平台 |
+| 聊天记录 | ✅ 原始 JSONL + LLMWiki 简化版 | ❌ 不包含聊天记录 |
+| 自动化 | 手动解压 + 配置 | 一键命令 |
+| 适用场景 | 完整备份 / 跨平台迁移 | OpenClaw → Hermes 快速迁移 |
+
+**建议**：首次迁移到 Hermes 用 `hermes claw migrate`，之后定期用 OneZion-Migrate zip 包做完整备份。
+
+### 迁移到 Claude Code
+
+Claude Code 是客户端 CLI 工具，不是自托管平台，无法直接迁移 skills。
+但可以将 SKILL.md 转换为 `CLAUDE.md` 格式（项目级指令文件）。
+
+### 迁移到 Codex CLI
+
+Codex CLI 是 OpenAI 的客户端工具，将 skills 内容整理为 `AGENTS.md` 格式即可。
+
+## 消息网关配置（Telegram / WhatsApp / 微信）
+
+Agent 上云后，通过消息网关可以在手机上直接指挥 Agent。
+
+### Telegram 接入（最推荐，最简单）
+
+```bash
+# Hermes
+hermes config set telegram.bot_token "YOUR_BOT_TOKEN"
+hermes gateway
+
+# WorkBuddy
+# 在 ~/.workbuddy/mcp.json 中配置 telegram MCP server
+```
+
+获取 Bot Token：Telegram 搜索 @BotFather → /newbot → 拿到 token
+
+### WhatsApp 接入
+
+```bash
+# 通过 wacli（WorkBuddy 已有此 skill）
+# 或通过 Hermes gateway 配置
+hermes config set whatsapp.enabled true
+hermes gateway
+```
+
+### 微信接入（国内最实用）
+
+三种方式，难度递增：
+
+**方式1：企业微信机器人（最稳定）**
+- 创建企微群 → 添加机器人 → 拿到 webhook URL
+- 配置到 Agent 的消息平台
+
+**方式2：iLink Bot / CowAgent 兼容层（Hermes 社区方案）**
+- 通过第三方协议适配，把个人微信消息桥接到 Hermes
+- 社区维护，需要一定技术基础
+- 搜索 "Hermes Agent 微信接入" 可找到完整教程
+
+**方式3：微信公众号 API（适合对外服务）**
+- 需要认证服务号
+- 配置消息回调 URL
+- 适合非个人用途
+
+### Hermes Gateway 一键启动
+
+```bash
+# 启动消息网关（同时接入所有已配置的消息平台）
+hermes gateway
+
+# 后台运行（部署到云服务器时）
+nohup hermes gateway &
+```
+
+启动后，Telegram/WhatsApp/微信 发消息给你的 Bot，Agent 就会响应。
+
+## 云端部署方案对比
+
+| 方案 | 月费 | 国内可用 | 一键部署 | 适合 Hermes |
+|------|------|---------|---------|------------|
+| Modal serverless | $0-3 | ⚠️ 需 VPN | ✅ | ⭐ 原生支持 |
+| Fly.io Free | $0 | ⚠️ 可能不稳定 | ✅ | ✅ |
+| Oracle Cloud Free | $0 永久 | ⚠️ 注册难 | ❌ | ✅ |
+| 腾讯云 Lighthouse | ¥30-40 | ✅ | ✅ | ✅ 官方镜像 |
+| 阿里云计算巢 | ¥30-50 | ✅ | ✅ | ✅ |
+| 华为云 | ¥30-50 | ✅ | ⚠️ | ✅ |
+| Render.com Free | $0 | ⚠️ | ✅ | ✅ |
+| Cloudflare | — | ❌ | — | ❌ 不适合长进程 |
+
+**推荐组合**：
+- 海外为主：Fly.io（免费）或 Modal（按量）
+- 国内为主：腾讯云 Lighthouse（微信生态最顺）
+- 双云方案：海外 Fly.io + 国内腾讯云，同一个 Hermes 配置
+
 ## 注意事项
 
 - 聊天记录全部丢入可能爆 context window，所以只迁移摘要 + 关键对话
 - 有些 MCP server 需要重新 OAuth 授权（如 Outlook、GitHub），README 中标注
 - 本地 RAG（ChromaDB 向量库）体积较大，可选择性包含
 - ScreenPipe 录制数据不包含在迁移包中（体积太大，且有隐私风险）
+- Hermes 迁移不包含聊天记录，建议先用 OneZion-Migrate zip 包备份再迁移
