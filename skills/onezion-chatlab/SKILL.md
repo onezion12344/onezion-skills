@@ -28,7 +28,7 @@ ChatLab API 已启用（Settings → ChatLab API → Enable Service）。Token �
 |------|-----|
 | **Base URL** | `http://127.0.0.1:5200` |
 | **API Prefix** | `/api/v1` |
-| **认证** | `Authorization: Bearer clb_7724398278d03a8fd3f3753430625ee99e4b1e093d0aa6c23fb46e8be62ed1c3` |
+| **认证** | `Authorization: Bearer clb_YOUR_CHATLAB_TOKEN_HERE` |
 | **数据格式** | JSON |
 
 Token 前缀为 `clb_`。如过期，引导用户到 ChatLab Settings → ChatLab API 重新生成。
@@ -38,7 +38,7 @@ Token 前缀为 `clb_`。如过期，引导用户到 ChatLab Settings → ChatLa
 所有请求都必须带上认证 header：
 
 ```bash
-TOKEN="clb_7724398278d03a8fd3f3753430625ee99e4b1e093d0aa6c23fb46e8be62ed1c3"
+TOKEN="clb_YOUR_CHATLAB_TOKEN_HERE"
 AUTH="-H 'Authorization: Bearer $TOKEN'"
 ```
 
