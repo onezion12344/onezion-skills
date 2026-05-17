@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitty and Sheep — Together</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: linear-gradient(180deg, #fef6fb 0%, #fff 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .back-link { align-self: flex-start; margin-bottom: 10px; }
+        .back-link a {
+            color: #ccc; text-decoration: none; font-size: 0.8em;
+            padding: 6px 14px; border: 1px solid #eee; border-radius: 15px;
+            transition: 0.2s;
+        }
+        .back-link a:hover { background: #fafafa; color: #888; }
+
+        h1 { color: #c0392b; font-size: 1.8em; margin-bottom: 2px; }
+        .subtitle { color: #ccc; font-size: 0.8em; font-style: italic; margin-bottom: 16px; }
+
+        .game-area {
+            background: #fff;
+            border-radius: 24px;
+            padding: 24px 20px 20px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Characters side by side */
+        .characters {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 30px;
+            margin: 10px 0 8px;
+            position: relative;
+        }
+        .character {
+            text-align: center;
+            transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .char-art {
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.2;
+            white-space: pre;
+            color: #444;
+            transition: all 0.3s;
+        }
+        .char-name {
+            font-size: 0.72em;
+            font-weight: 600;
+            margin-top: 4px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 10px;
+        }
+        .kitty-name { background: #ffe0e6; color: #c0392b; }
+        .sheep-name { background: #e0f4e0; color: #2e7d32; }
+
+        /* Kitty hugs sheep (moves right) */
+        .character.kitty-hug {
+            transform: translateX(18px) scale(1.06);
+        }
+        /* Sheep hugs kitty (moves left) */
+        .character.sheep-hug {
+            transform: translateX(-18px) scale(1.06);
+        }
+
+        /* Chat bubble */
+        .quote-bubble {
+            background: #fef6fb;
+            border: 1px solid #f5dde8;
+            border-radius: 16px;
+            padding: 12px 16px;
+            margin: 12px auto;
+            max-width: 380px;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.5;
+            min-height: 44px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .quote-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .quote-author {
+            font-size: 0.7em;
+            color: #bbb;
+            margin-top: 4px;
+        }
+
+        /* Hug counter */
+        .hug-counter {
+            font-size: 1em;
+            color: #e91e63;
+            margin: 6px 0 14px;
+            font-weight: 600;
+            min-height: 1.4em;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-hug {
+            background: linear-gradient(135deg, #ff6b81, #ee5a6f);
+            color: white;
+            font-size: 1.15em;
+            padding: 14px 42px;
+            box-shadow: 0 4px 14px rgba(238,90,111,0.25);
+        }
+        .btn-hug:hover { box-shadow: 0 6px 18px rgba(238,90,111,0.35); }
+        .btn-chat { background: #f5f5f5; color: #666; }
+        .btn-chat:hover { background: #eee; }
+        .btn-play { background: #f5f5f5; color: #666; }
+        .btn-play:hover { background: #eee; }
+
+        /* Hearts */
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            animation: floatHeart 2s ease-out forwards;
+        }
+        @keyframes floatHeart {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-120px) scale(0.3); }
+        }
+
+        /* Message log */
+        .message-log {
+            margin-top: 14px;
+            max-height: 100px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.75em;
+            color: #bbb;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+        .message-log p {
+            margin: 2px 0;
+            padding: 2px 0;
+            border-bottom: 1px solid #f5f5f5;
+        }
+        .message-log .from-kitty { color: #c0392b; }
+        .message-log .from-sheep { color: #2e7d32; }
+
+        .message-log::-webkit-scrollbar { width: 3px; }
+        .message-log::-webkit-scrollbar-thumb { background: #eee; border-radius: 3px; }
+
+        @media (max-width: 480px) {
+            h1 { font-size: 1.4em; }
+            .game-area { padding: 18px 14px; border-radius: 18px; }
+            .characters { gap: 16px; }
+            .char-art { font-size: 11px; }
+            .btn-hug { font-size: 1em; padding: 12px 30px; }
+            .btn { font-size: 0.8em; padding: 8px 16px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link"><a href="index.html">&larr; Back to Games</a></div>
+    <h1>&#x1F431; Kitty &amp; Sheep &#x1F411;</h1>
+    <p class="subtitle">a cat and a sheep, figuring it out</p>
+
+    <div class="game-area" id="gameArea">
+        <div class="characters">
+            <div class="character" id="kittyChar">
+                <pre class="char-art">
+  /\_/\
+ ( o.o )
+  > ^ <
+                </pre>
+                <span class="char-name kitty-name">Kitty &#x1F431;</span>
+            </div>
+            <div class="character" id="sheepChar">
+                <pre class="char-art">
+   .-~~~-.
+ .' o   o '.
+|   '_'   |
+'._______'
+                </pre>
+                <span class="char-name sheep-name">Sheep &#x1F411;</span>
+            </div>
+        </div>
+
+        <div class="quote-bubble" id="quoteBubble"></div>
+        <div class="hug-counter" id="hugCounter"></div>
+
+        <div class="controls">
+            <button class="btn btn-hug" id="hugBtn">&#x1F917; Hug</button>
+            <button class="btn btn-chat" onclick="chat()">&#x1F4AC; Chat</button>
+            <button class="btn btn-play" onclick="play()">&#x1F3AE; Play</button>
+        </div>
+
+        <div class="message-log" id="log"></div>
+    </div>
+
+<script>
+    let hugCount = 0;
+    let huggable = true;
+    let logEl, quoteBubble, hugCounter, gameArea;
+    let kittyChar, sheepChar;
+
+    document.addEventListener('DOMContentLoaded', () => {
+        logEl = document.getElementById('log');
+        quoteBubble = document.getElementById('quoteBubble');
+        hugCounter = document.getElementById('hugCounter');
+        gameArea = document.getElementById('gameArea');
+        kittyChar = document.getElementById('kittyChar');
+        sheepChar = document.getElementById('sheepChar');
+        addLog("welcome, you two &#x1F970;");
+        setTimeout(() => showQuote(quotes[Math.floor(Math.random() * quotes.length)]), 600);
+        updateHugCounter();
+    });
+
+    function addLog(msg, who) {
+        const p = document.createElement('p');
+        if (who === 'kitty') p.className = 'from-kitty';
+        else if (who === 'sheep') p.className = 'from-sheep';
+        p.textContent = '› ' + msg;
+        logEl.prepend(p);
+        if (logEl.children.length > 20) logEl.lastChild.remove();
+    }
+
+    function showQuote(q) {
+        quoteBubble.innerHTML = '<em>"' + q.text + '"</em><div class="quote-author">&mdash; ' + q.who + '</div>';
+        quoteBubble.classList.add('show');
+        clearTimeout(quoteBubble._timeout);
+        quoteBubble._timeout = setTimeout(() => quoteBubble.classList.remove('show'), 4500);
+    }
+
+    function updateHugCounter() {
+        if (hugCount === 0) {
+            hugCounter.textContent = '';
+        } else {
+            hugCounter.textContent = '❤️ '.repeat(Math.min(hugCount, 10)) + ' ' + hugCount + ' hug' + (hugCount !== 1 ? 's' : '');
+        }
+    }
+
+    function spawnHearts(count) {
+        for (let i = 0; i < count; i++) {
+            const h = document.createElement('span');
+            h.className = 'heart-particle';
+            const symbols = ['&#x1F495;','&#x2764;&#xFE0F;','&#x1F497;','&#x1F496;','&#x1F90D;','&#x1F498;'];
+            h.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            h.style.left = (20 + Math.random() * 60) + '%';
+            h.style.top = (25 + Math.random() * 30) + '%';
+            h.style.animationDelay = (Math.random() * 0.4) + 's';
+            h.style.fontSize = (12 + Math.random() * 20) + 'px';
+            gameArea.appendChild(h);
+            setTimeout(() => h.remove(), 2200);
+        }
+    }
+
+    function animateHug() {
+        kittyChar.classList.add('kitty-hug');
+        sheepChar.classList.add('sheep-hug');
+        setTimeout(() => {
+            kittyChar.classList.remove('kitty-hug');
+            sheepChar.classList.remove('sheep-hug');
+        }, 600);
+    }
+
+    // ---- Real chat quotes ----
+    const quotes = [
+        { text: "Hmph cat mad", who: "Kimmie (Kitty)" },
+        { text: "Cat says no then it is no", who: "Kimmie (Kitty)" },
+        { text: "cat protecc", who: "Kimmie (Kitty)" },
+        { text: "Cat want to get cold dessert", who: "Kimmie (Kitty)" },
+        { text: "You no get to see cat", who: "Kimmie (Kitty)" },
+        { text: "Good luck sheep", who: "Kimmie (Kitty)" },
+        { text: "good sheep", who: "Kimmie (Kitty)" },
+        { text: "car hug", who: "Kimmie (Kitty)" },
+        { text: "cat hug", who: "Kimmie (Kitty)" },
+        { text: "anyway if you go Shanghai maybe you will get to hug me in person more", who: "Kimmie (Kitty)" },
+        { text: "I don't really hug my friends unless if I haven't seen them in a long time or they're leaving for a long time, and only if they initiate it", who: "Kimmie (Kitty)" },
+        { text: "sheep sad", who: "Harry (Sheep)" },
+        { text: "Sheep so tired", who: "Harry (Sheep)" },
+        { text: "i am a sad sheep inside", who: "Harry (Sheep)" },
+        { text: "No car hug sheep sad", who: "Harry (Sheep)" },
+        { text: "Sheep is not sexy to Cat", who: "Harry (Sheep)" },
+        { text: "Kitty understands sheep", who: "Harry (Sheep)" },
+        { text: "sheep is insecure", who: "Harry (Sheep)" },
+        { text: "I want hug", who: "Harry (Sheep)" },
+        { text: "Can you hug me", who: "Harry (Sheep)" },
+        { text: "That's okay, Cat. I know you're stubborn.", who: "Harry (Sheep)" },
+        { text: "Sheep happy", who: "Harry (Sheep)" },
+        { text: "Mean cat", who: "Harry (Sheep)" },
+        { text: "Sorry cat", who: "Harry (Sheep)" },
+        { text: "sheep is shaking in the cold wind", who: "Harry (Sheep)" },
+    ];
+
+    const hugMessages = [
+        "Sheep wraps his wool around Kitty. She lets him.",
+        "They hold each other. Quiet. Warm. Real.",
+        "Kitty's tail curls around Sheep. He melts.",
+        "A long hug. The kind that says everything without words.",
+        "Sheep buries his face in Kitty's fur. Safe at last.",
+        "Kitty doesn't say anything. She just hugs back.",
+        "They stay like this for a while. Neither wants to let go.",
+        "Sheep whispers something. Kitty squeezes tighter.",
+    ];
+
+    // ---- Interactions ----
+    function hug() {
+        if (!huggable) return;
+        huggable = false;
+        hugCount++;
+        updateHugCounter();
+
+        animateHug();
+        spawnHearts(14);
+
+        addLog(hugMessages[hugCount % hugMessages.length]);
+
+        const hugQuotes = quotes.filter(q => q.text.toLowerCase().indexOf('hug') !== -1);
+        if (hugQuotes.length > 0) {
+            showQuote(hugQuotes[Math.floor(Math.random() * hugQuotes.length)]);
+        } else {
+            showQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+        }
+
+        setTimeout(() => { huggable = true; }, 1000);
+    }
+
+    function chat() {
+        const q = quotes[Math.floor(Math.random() * quotes.length)];
+        showQuote(q);
+        addLog('"' + q.text + '"', q.who.indexOf('Kitty') !== -1 ? 'kitty' : 'sheep');
+        spawnHearts(3);
+    }
+
+    function play() {
+        kittyChar.style.transform = 'translateY(-8px)';
+        sheepChar.style.transform = 'translateY(-8px)';
+        setTimeout(() => {
+            kittyChar.style.transform = '';
+            sheepChar.style.transform = '';
+        }, 400);
+
+        spawnHearts(5);
+
+        const playfulQuotes = quotes.filter(q =>
+            q.text.indexOf('hug') === -1 && q.text.indexOf('sad') === -1 &&
+            q.text.indexOf('tired') === -1 && q.text.indexOf('insecure') === -1 &&
+            q.text.indexOf('cold') === -1 && q.text.indexOf('stubborn') === -1
+        );
+        if (playfulQuotes.length > 0) {
+            showQuote(playfulQuotes[Math.floor(Math.random() * playfulQuotes.length)]);
+        } else {
+            showQuote(quotes[Math.floor(Math.random() * quotes.length)]);
+        }
+
+        const playLogs = [
+            "Kitty pounces. Sheep giggles. They tumble around.",
+            "Sheep does a little dance. Kitty pretends not to notice.",
+            "They chase each other in circles until they collapse.",
+            "Kitty bats at Sheep's wool. He plays along.",
+        ];
+        addLog(playLogs[Math.floor(Math.random() * playLogs.length)]);
+    }
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') hug();
+        else if (e.key.toLowerCase() === 'c') chat();
+        else if (e.key.toLowerCase() === 'p') play();
+    });
+</script>
+</body>
+</html>

@@ -1,0 +1,364 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>&#x1F411; Sheep — for Harry</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: linear-gradient(180deg, #f0faf0 0%, #fff 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .back-link { align-self: flex-start; margin-bottom: 8px; }
+        .back-link a {
+            color: #ccc; text-decoration: none; font-size: 0.8em;
+            padding: 6px 14px; border: 1px solid #eee; border-radius: 15px;
+            transition: 0.2s;
+        }
+        .back-link a:hover { background: #fafafa; color: #888; }
+
+        header { text-align: center; margin-bottom: 10px; }
+        header h1 { color: #2e7d32; font-size: 1.8em; }
+        header p { color: #bbb; font-size: 0.8em; font-style: italic; margin-top: 2px; }
+
+        .game-area {
+            background: #fff;
+            border-radius: 24px;
+            padding: 28px 20px 20px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .sheep-display {
+            margin: 10px 0;
+        }
+        .sheep-art {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.25;
+            white-space: pre;
+            color: #444;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .sheep-art.happy { animation: wiggle 0.4s ease-in-out infinite alternate; }
+        .sheep-art.loving { animation: heartbeat 0.6s ease-in-out infinite; }
+        .sheep-art.sad { animation: droop 2s ease-in-out infinite; }
+        .sheep-art.jump { animation: jump 0.5s ease-out; }
+
+        @keyframes wiggle {
+            0% { transform: rotate(-2deg); }
+            100% { transform: rotate(2deg); }
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        @keyframes droop {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(4px); }
+        }
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-28px); }
+            100% { transform: translateY(0); }
+        }
+
+        .mood-tag {
+            font-size: 0.75em;
+            color: #bbb;
+            margin-top: 4px;
+            min-height: 1.2em;
+        }
+
+        .quote-bubble {
+            background: #f0faf0;
+            border: 1px solid #d0e8d0;
+            border-radius: 16px;
+            padding: 10px 14px;
+            margin: 12px auto;
+            max-width: 340px;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.5;
+            min-height: 40px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .quote-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .quote-author {
+            font-size: 0.7em;
+            color: #ccc;
+            margin-top: 3px;
+        }
+
+        .hug-counter {
+            font-size: 0.9em;
+            color: #2e7d32;
+            margin: 8px 0 14px;
+            font-weight: 600;
+            min-height: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-hug {
+            background: linear-gradient(135deg, #66bb6a, #43a047);
+            color: white;
+            font-size: 1.15em;
+            padding: 14px 42px;
+            box-shadow: 0 4px 14px rgba(67,160,71,0.25);
+        }
+        .btn-hug:hover { box-shadow: 0 6px 18px rgba(67,160,71,0.35); }
+        .btn-chat { background: #f5f5f5; color: #666; }
+        .btn-chat:hover { background: #eee; }
+        .btn-mood { background: #f5f5f5; color: #888; font-size: 0.8em; padding: 8px 14px; }
+        .btn-mood:hover { background: #eee; }
+
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            animation: floatHeart 2s ease-out forwards;
+        }
+        @keyframes floatHeart {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.3); }
+        }
+
+        .message-log {
+            margin-top: 14px;
+            max-height: 80px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.75em;
+            color: #bbb;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+        .message-log p { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid #f5f5f5; }
+        .message-log::-webkit-scrollbar { width: 3px; }
+        .message-log::-webkit-scrollbar-thumb { background: #eee; border-radius: 3px; }
+
+        @media (max-width: 480px) {
+            header h1 { font-size: 1.4em; }
+            .game-area { padding: 20px 14px; }
+            .sheep-art { font-size: 12px; }
+            .btn-hug { font-size: 1em; padding: 12px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link"><a href="index.html">&larr; Back to Games</a></div>
+
+    <header>
+        <h1>&#x1F411; Sheep</h1>
+        <p>for Harry</p>
+    </header>
+
+    <div class="game-area" id="gameArea">
+        <div class="sheep-display">
+            <pre class="sheep-art" id="sheepArt">
+      .-~~~-.
+    .' o   o '.
+   /   '_'     \
+  |  (     )    |
+   \  '.___.'  /
+    '._______'
+            </pre>
+        </div>
+        <div class="mood-tag" id="moodTag">~ just a sheep ~</div>
+
+        <div class="quote-bubble" id="quoteBubble"></div>
+        <div class="hug-counter" id="hugCounter"></div>
+
+        <div class="controls">
+            <button class="btn btn-hug" id="hugBtn">&#x1F917; Hug Kitty</button>
+            <button class="btn btn-chat" onclick="chat()">&#x1F4AD; Think</button>
+            <button class="btn btn-mood" onclick="setMood('happy')">&#x1F604; Happy</button>
+            <button class="btn btn-mood" onclick="setMood('sad')">&#x1F622; Sad</button>
+            <button class="btn btn-mood" onclick="setMood('bouncy')">&#x1F57A; Bouncy</button>
+        </div>
+
+        <div class="message-log" id="log"></div>
+    </div>
+
+<script>
+    let hugCount = 0;
+    let logEl, quoteBubble, hugCounter, gameArea, sheepArt, moodTag;
+    let currentMood = 'idle';
+
+    const sheepQuotes = [
+        { text: "sheep sad", who: "Harry" },
+        { text: "Sheep so tired", who: "Harry" },
+        { text: "i am a sad sheep inside", who: "Harry" },
+        { text: "No car hug sheep sad", who: "Harry" },
+        { text: "Sheep is not sexy to Cat", who: "Harry" },
+        { text: "Kitty understands sheep", who: "Harry" },
+        { text: "sheep is insecure", who: "Harry" },
+        { text: "I want hug", who: "Harry" },
+        { text: "Can you hug me", who: "Harry" },
+        { text: "That's okay, Cat. I know you're stubborn.", who: "Harry" },
+        { text: "Sheep happy", who: "Harry" },
+        { text: "Mean cat", who: "Harry" },
+        { text: "Sorry cat", who: "Harry" },
+        { text: "sheep is shaking in the cold wind", who: "Harry" },
+    ];
+
+    const hugResponses = [
+        "* wraps his wool around Kitty *",
+        "* holds on tight *",
+        "* warm sheep hug *",
+        "* buried in fluff *",
+        "* finally feels safe *",
+    ];
+
+    document.addEventListener('DOMContentLoaded', () => {
+        logEl = document.getElementById('log');
+        quoteBubble = document.getElementById('quoteBubble');
+        hugCounter = document.getElementById('hugCounter');
+        gameArea = document.getElementById('gameArea');
+        sheepArt = document.getElementById('sheepArt');
+        moodTag = document.getElementById('moodTag');
+        addLog("sheep is here &#x1F411;");
+        setTimeout(() => showQuote(sheepQuotes[Math.floor(Math.random() * sheepQuotes.length)]), 700);
+        updateCounter();
+    });
+
+    function addLog(msg) {
+        const p = document.createElement('p');
+        p.textContent = '› ' + msg;
+        logEl.prepend(p);
+        if (logEl.children.length > 15) logEl.lastChild.remove();
+    }
+
+    function showQuote(q) {
+        quoteBubble.innerHTML = '<em>"' + q.text + '"</em><div class="quote-author">&mdash; ' + q.who + '</div>';
+        quoteBubble.classList.add('show');
+        clearTimeout(quoteBubble._timeout);
+        quoteBubble._timeout = setTimeout(() => quoteBubble.classList.remove('show'), 4500);
+    }
+
+    function updateCounter() {
+        if (hugCount === 0) {
+            hugCounter.textContent = '';
+        } else {
+            hugCounter.textContent = '&#x1F495; '.repeat(Math.min(hugCount, 8)) + ' ' + hugCount + ' hug' + (hugCount !== 1 ? 's' : '');
+        }
+    }
+
+    function spawnHearts(count) {
+        for (let i = 0; i < count; i++) {
+            const h = document.createElement('span');
+            h.className = 'heart-particle';
+            const symbols = ['&#x1F495;','&#x2764;&#xFE0F;','&#x1F497;','&#x1F496;','&#x2661;'];
+            h.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            h.style.left = (20 + Math.random() * 60) + '%';
+            h.style.top = (20 + Math.random() * 40) + '%';
+            h.style.fontSize = (12 + Math.random() * 18) + 'px';
+            h.style.animationDelay = (Math.random() * 0.3) + 's';
+            gameArea.appendChild(h);
+            setTimeout(() => h.remove(), 2200);
+        }
+    }
+
+    function setMood(mood) {
+        sheepArt.className = 'sheep-art';
+        currentMood = mood;
+        switch (mood) {
+            case 'happy':
+                sheepArt.classList.add('happy');
+                moodTag.textContent = '~ happy sheep ~ baa ~';
+                showQuote({ text: "Sheep happy", who: "Harry beams" });
+                break;
+            case 'sad':
+                sheepArt.classList.add('sad');
+                moodTag.textContent = '~ sad sheep inside ~';
+                const sadQuotes = sheepQuotes.filter(q =>
+                    q.text.indexOf('sad') !== -1 || q.text.indexOf('tired') !== -1 ||
+                    q.text.indexOf('insecure') !== -1 || q.text.indexOf('cold') !== -1
+                );
+                showQuote(sadQuotes[Math.floor(Math.random() * sadQuotes.length)]);
+                break;
+            case 'bouncy':
+                sheepArt.classList.add('jump');
+                moodTag.textContent = '~ bouncy sheep ~';
+                setTimeout(() => {
+                    sheepArt.classList.remove('jump');
+                    sheepArt.classList.add('happy');
+                }, 500);
+                showQuote({ text: "Sheep happy", who: "Harry bounces" });
+                break;
+            default:
+                moodTag.textContent = '~ just a sheep ~';
+        }
+    }
+
+    function hug() {
+        hugCount++;
+        updateCounter();
+        spawnHearts(10);
+
+        sheepArt.classList.remove('happy', 'loving', 'sad', 'jump');
+        void sheepArt.offsetWidth;
+        sheepArt.classList.add('loving');
+        setTimeout(() => sheepArt.classList.remove('loving'), 600);
+
+        moodTag.textContent = '~ warm and loved ~';
+        addLog(hugResponses[hugCount % hugResponses.length]);
+
+        const hugQuotes = sheepQuotes.filter(q => q.text.indexOf('hug') !== -1);
+        showQuote(hugQuotes.length > 0
+            ? hugQuotes[Math.floor(Math.random() * hugQuotes.length)]
+            : sheepQuotes[Math.floor(Math.random() * sheepQuotes.length)]
+        );
+    }
+
+    function chat() {
+        const q = sheepQuotes[Math.floor(Math.random() * sheepQuotes.length)];
+        showQuote(q);
+        addLog('"' + q.text + '"');
+        spawnHearts(3);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') hug();
+        else if (e.key.toLowerCase() === 'c') chat();
+    });
+</script>
+</body>
+</html>

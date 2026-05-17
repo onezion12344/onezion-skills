@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>&#x1F431; Cat — for Kimmie</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', -apple-system, sans-serif;
+            background: linear-gradient(180deg, #fef6fb 0%, #fff 50%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .back-link { align-self: flex-start; margin-bottom: 8px; }
+        .back-link a {
+            color: #ccc; text-decoration: none; font-size: 0.8em;
+            padding: 6px 14px; border: 1px solid #eee; border-radius: 15px;
+            transition: 0.2s;
+        }
+        .back-link a:hover { background: #fafafa; color: #888; }
+
+        header { text-align: center; margin-bottom: 10px; }
+        header h1 { color: #c0392b; font-size: 1.8em; }
+        header p { color: #ccc; font-size: 0.8em; font-style: italic; margin-top: 2px; }
+
+        .game-area {
+            background: #fff;
+            border-radius: 24px;
+            padding: 28px 20px 20px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 2px 24px rgba(0,0,0,0.05);
+            text-align: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .cat-display {
+            margin: 10px 0;
+        }
+        .cat-art {
+            font-family: 'Courier New', monospace;
+            font-size: 15px;
+            line-height: 1.3;
+            white-space: pre;
+            color: #444;
+            transition: all 0.3s;
+            display: inline-block;
+        }
+        .cat-art.happy { animation: purr 0.4s ease-in-out infinite alternate; }
+        .cat-art.loving { animation: heartbeat 0.6s ease-in-out infinite; }
+        .cat-art.jump { animation: jump 0.5s ease-out; }
+
+        @keyframes purr {
+            0% { transform: translateX(-2px); }
+            100% { transform: translateX(2px); }
+        }
+        @keyframes heartbeat {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.06); }
+        }
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-24px); }
+            100% { transform: translateY(0); }
+        }
+
+        .mood-tag {
+            font-size: 0.75em;
+            color: #bbb;
+            margin-top: 4px;
+            min-height: 1.2em;
+        }
+
+        .quote-bubble {
+            background: #fef6fb;
+            border: 1px solid #f5dde8;
+            border-radius: 16px;
+            padding: 10px 14px;
+            margin: 12px auto;
+            max-width: 340px;
+            font-size: 0.85em;
+            color: #666;
+            line-height: 1.5;
+            min-height: 40px;
+            opacity: 0;
+            transform: translateY(6px);
+            transition: opacity 0.4s ease, transform 0.4s ease;
+        }
+        .quote-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .quote-author {
+            font-size: 0.7em;
+            color: #ccc;
+            margin-top: 3px;
+        }
+
+        .hug-counter {
+            font-size: 0.9em;
+            color: #e91e63;
+            margin: 8px 0 14px;
+            font-weight: 600;
+            min-height: 1.2em;
+        }
+
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .btn {
+            border: none;
+            padding: 10px 20px;
+            border-radius: 50px;
+            font-size: 0.85em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn:active { transform: translateY(0); }
+
+        .btn-hug {
+            background: linear-gradient(135deg, #ff6b81, #ee5a6f);
+            color: white;
+            font-size: 1.15em;
+            padding: 14px 42px;
+            box-shadow: 0 4px 14px rgba(238,90,111,0.25);
+        }
+        .btn-hug:hover { box-shadow: 0 6px 18px rgba(238,90,111,0.35); }
+        .btn-chat { background: #f5f5f5; color: #666; }
+        .btn-chat:hover { background: #eee; }
+        .btn-mood { background: #f5f5f5; color: #888; font-size: 0.8em; padding: 8px 14px; }
+        .btn-mood:hover { background: #eee; }
+
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            z-index: 10;
+            animation: floatHeart 2s ease-out forwards;
+        }
+        @keyframes floatHeart {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.3); }
+        }
+
+        .message-log {
+            margin-top: 14px;
+            max-height: 80px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.75em;
+            color: #bbb;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-radius: 12px;
+        }
+        .message-log p { margin: 2px 0; padding: 2px 0; border-bottom: 1px solid #f5f5f5; }
+        .message-log::-webkit-scrollbar { width: 3px; }
+        .message-log::-webkit-scrollbar-thumb { background: #eee; border-radius: 3px; }
+
+        @media (max-width: 480px) {
+            header h1 { font-size: 1.4em; }
+            .game-area { padding: 20px 14px; }
+            .cat-art { font-size: 13px; }
+            .btn-hug { font-size: 1em; padding: 12px 30px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="back-link"><a href="index.html">&larr; Back to Games</a></div>
+
+    <header>
+        <h1>&#x1F431; Cat</h1>
+        <p>for Kimmie Snowy Kitty</p>
+    </header>
+
+    <div class="game-area" id="gameArea">
+        <div class="cat-display">
+            <pre class="cat-art" id="catArt">
+    /\___/\
+   (  o o  )
+   /   ^   \
+  /  |   |  \
+ (___|   |___)
+            </pre>
+        </div>
+        <div class="mood-tag" id="moodTag">~ cool cat ~</div>
+
+        <div class="quote-bubble" id="quoteBubble"></div>
+        <div class="hug-counter" id="hugCounter"></div>
+
+        <div class="controls">
+            <button class="btn btn-hug" id="hugBtn">&#x1F917; Hug Sheep</button>
+            <button class="btn btn-chat" onclick="chat()">&#x1F4AC; Say</button>
+            <button class="btn btn-mood" onclick="setMood('happy')">&#x1F63A; Happy</button>
+            <button class="btn btn-mood" onclick="setMood('sleepy')">&#x1F634; Sleepy</button>
+            <button class="btn btn-mood" onclick="setMood('sassy')">&#x1F63E; Sassy</button>
+        </div>
+
+        <div class="message-log" id="log"></div>
+    </div>
+
+<script>
+    let hugCount = 0;
+    let logEl, quoteBubble, hugCounter, gameArea, catArt, moodTag;
+    let currentMood = 'idle';
+
+    const kittyQuotes = [
+        { text: "Hmph cat mad", who: "Kimmie" },
+        { text: "Cat says no then it is no", who: "Kimmie" },
+        { text: "cat protecc", who: "Kimmie" },
+        { text: "Cat want to get cold dessert", who: "Kimmie" },
+        { text: "You no get to see cat", who: "Kimmie" },
+        { text: "Good luck sheep", who: "Kimmie" },
+        { text: "good sheep", who: "Kimmie" },
+        { text: "car hug", who: "Kimmie" },
+        { text: "cat hug", who: "Kimmie" },
+        { text: "anyway if you go Shanghai maybe you will get to hug me in person more", who: "Kimmie" },
+        { text: "I don't really hug my friends unless if I haven't seen them in a long time or they're leaving for a long time, and only if they initiate it", who: "Kimmie" },
+    ];
+
+    const hugResponses = [
+        "* purrs softly *",
+        "* curls her tail around *",
+        "* lets him *",
+        "* warm and soft *",
+        "* pretends she doesn't love it *",
+    ];
+
+    const sassyQuotes = kittyQuotes.filter(q =>
+        q.text.indexOf('mad') !== -1 || q.text.indexOf('no') !== -1 ||
+        q.text.indexOf('no get') !== -1 || q.text.indexOf('stubborn') !== -1 ||
+        q.text.indexOf("don't really") !== -1
+    );
+
+    document.addEventListener('DOMContentLoaded', () => {
+        logEl = document.getElementById('log');
+        quoteBubble = document.getElementById('quoteBubble');
+        hugCounter = document.getElementById('hugCounter');
+        gameArea = document.getElementById('gameArea');
+        catArt = document.getElementById('catArt');
+        moodTag = document.getElementById('moodTag');
+        addLog("kitty is here &#x1F431;");
+        setTimeout(() => showQuote(kittyQuotes[Math.floor(Math.random() * kittyQuotes.length)]), 700);
+        updateCounter();
+    });
+
+    function addLog(msg) {
+        const p = document.createElement('p');
+        p.textContent = '› ' + msg;
+        logEl.prepend(p);
+        if (logEl.children.length > 15) logEl.lastChild.remove();
+    }
+
+    function showQuote(q) {
+        quoteBubble.innerHTML = '<em>"' + q.text + '"</em><div class="quote-author">&mdash; ' + q.who + '</div>';
+        quoteBubble.classList.add('show');
+        clearTimeout(quoteBubble._timeout);
+        quoteBubble._timeout = setTimeout(() => quoteBubble.classList.remove('show'), 4500);
+    }
+
+    function updateCounter() {
+        if (hugCount === 0) {
+            hugCounter.textContent = '';
+        } else {
+            hugCounter.textContent = '&#x1F495; '.repeat(Math.min(hugCount, 8)) + ' ' + hugCount + ' hug' + (hugCount !== 1 ? 's' : '');
+        }
+    }
+
+    function spawnHearts(count) {
+        for (let i = 0; i < count; i++) {
+            const h = document.createElement('span');
+            h.className = 'heart-particle';
+            const symbols = ['&#x1F495;','&#x2764;&#xFE0F;','&#x1F497;','&#x1F496;','&#x2661;'];
+            h.innerHTML = symbols[Math.floor(Math.random() * symbols.length)];
+            h.style.left = (20 + Math.random() * 60) + '%';
+            h.style.top = (20 + Math.random() * 40) + '%';
+            h.style.animationDelay = (Math.random() * 0.3) + 's';
+            h.style.fontSize = (12 + Math.random() * 18) + 'px';
+            gameArea.appendChild(h);
+            setTimeout(() => h.remove(), 2200);
+        }
+    }
+
+    function setMood(mood) {
+        catArt.className = 'cat-art';
+        currentMood = mood;
+        switch (mood) {
+            case 'happy':
+                catArt.classList.add('happy');
+                moodTag.textContent = '~ purring ~';
+                showQuote({ text: "good sheep~", who: "Kitty purrs" });
+                break;
+            case 'sleepy':
+                moodTag.textContent = '~ sleepy kitty ~';
+                showQuote({ text: "zzZ... cat is sleeping... don't disturb...", who: "Sleepy Kitty" });
+                break;
+            case 'sassy':
+                catArt.classList.add('happy');
+                moodTag.textContent = '~ don\'t test the cat ~';
+                if (sassyQuotes.length > 0) {
+                    showQuote(sassyQuotes[Math.floor(Math.random() * sassyQuotes.length)]);
+                }
+                break;
+            default:
+                moodTag.textContent = '~ cool cat ~';
+        }
+    }
+
+    function hug() {
+        hugCount++;
+        updateCounter();
+        spawnHearts(10);
+
+        catArt.classList.remove('happy', 'loving', 'jump');
+        void catArt.offsetWidth;
+        catArt.classList.add('loving');
+        setTimeout(() => catArt.classList.remove('loving'), 600);
+
+        moodTag.textContent = '~ warm and soft ~';
+        addLog(hugResponses[hugCount % hugResponses.length]);
+
+        const hugQuotes = kittyQuotes.filter(q => q.text.indexOf('hug') !== -1);
+        showQuote(hugQuotes.length > 0
+            ? hugQuotes[Math.floor(Math.random() * hugQuotes.length)]
+            : kittyQuotes[Math.floor(Math.random() * kittyQuotes.length)]
+        );
+    }
+
+    function chat() {
+        const q = kittyQuotes[Math.floor(Math.random() * kittyQuotes.length)];
+        showQuote(q);
+        addLog('"' + q.text + '"');
+        spawnHearts(3);
+    }
+
+    document.addEventListener('keydown', (e) => {
+        if (e.key.toLowerCase() === 'h') hug();
+        else if (e.key.toLowerCase() === 'c') chat();
+    });
+</script>
+</body>
+</html>
