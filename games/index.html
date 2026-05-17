@@ -1,125 +1,95 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>🎮 Cat & Sheep Games</title>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitty and Sheep Games</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .container {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            text-align: center;
+            max-width: 600px;
+            width: 100%;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 2.5em;
+        }
+        
+        .game-option {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.2em;
+            cursor: pointer;
+            margin: 10px;
+            transition: transform 0.3s, box-shadow 0.3s;
+            display: inline-block;
+        }
 
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  body {
-    background: #0a0a1a;
-    color: #e0e0e0;
-    font-family: 'JetBrains Mono', monospace;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 40px 20px;
-  }
-
-  .container {
-    text-align: center;
-    max-width: 600px;
-    width: 100%;
-  }
-
-  h1 {
-    font-size: 2.5em;
-    margin-bottom: 10px;
-    background: linear-gradient(135deg, #ff6b9d, #c44dff, #7dd3fc);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-  }
-
-  .subtitle {
-    color: #888;
-    margin-bottom: 40px;
-    font-style: italic;
-  }
-
-  .cards {
-    display: flex;
-    gap: 20px;
-    justify-content: center;
-    flex-wrap: wrap;
-  }
-
-  .card {
-    background: rgba(255,255,255,0.05);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 20px;
-    padding: 30px 25px;
-    width: 260px;
-    text-decoration: none;
-    color: inherit;
-    transition: all 0.3s;
-    cursor: pointer;
-  }
-
-  .card:hover {
-    transform: translateY(-5px);
-    border-color: rgba(255,255,255,0.3);
-    box-shadow: 0 10px 30px rgba(0,0,0,0.3);
-  }
-
-  .card.cat:hover { box-shadow: 0 10px 30px rgba(255,107,157,0.2); }
-  .card.sheep:hover { box-shadow: 0 10px 30px rgba(125,211,252,0.2); }
-
-  .card .emoji { font-size: 3em; margin-bottom: 15px; }
-  .card h2 { font-size: 1.3em; margin-bottom: 8px; }
-  .card.cat h2 { color: #ff6b9d; }
-  .card.sheep h2 { color: #7dd3fc; }
-  .card p { color: #888; font-size: 0.85em; line-height: 1.5; }
-
-  .card .tag {
-    display: inline-block;
-    margin-top: 12px;
-    padding: 4px 12px;
-    border-radius: 20px;
-    font-size: 0.75em;
-  }
-
-  .card.cat .tag { background: rgba(255,107,157,0.15); color: #ff6b9d; }
-  .card.sheep .tag { background: rgba(125,211,252,0.15); color: #7dd3fc; }
-
-  footer {
-    margin-top: 50px;
-    color: #444;
-    font-size: 0.75em;
-  }
-</style>
+        .game-option.together {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 40%, #11998e 100%);
+            padding: 18px 36px;
+            font-size: 1.35em;
+        }
+        
+        .game-option:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-option:active {
+            transform: translateY(1px);
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+        
+        .kitty-sheep {
+            font-size: 3em;
+            margin: 20px 0;
+            animation: bounce 2s infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+    </style>
 </head>
 <body>
+    <div class="container">
+        <h1>Kitty and Sheep Games</h1>
+        <div class="kitty-sheep">🐱🐑</div>
+        <p class="subtitle">Choose your adventure!</p>
 
-<div class="container">
-  <h1>🎮 Cat & Sheep</h1>
-  <p class="subtitle">made by sheep for cat</p>
+        <button class="game-option together" onclick="location.href='kitty-and-sheep.html'">🐱 Play with Kitty and Sheep 🐑</button>
 
-  <div class="cards">
-    <a class="card cat" href="cat.html">
-      <div class="emoji">🐱</div>
-      <h2>Cat</h2>
-      <p>for Kimmie Snowy Kitty<br>moods, blinking, walking, and judgmental stares</p>
-      <span class="tag">tap to play</span>
-    </a>
+        <div style="margin: 18px 0; color: #aaa;">— or play separately —</div>
 
-    <a class="card sheep" href="sheep.html">
-      <div class="emoji">🐑</div>
-      <h2>Sheep</h2>
-      <p>for Harry<br>jumping, bouncing, and existential thoughts</p>
-      <span class="tag">tap to play</span>
-    </a>
-  </div>
-</div>
-
-<footer>
-  cat + sheep · 2026
-</footer>
-
+        <button class="game-option" onclick="location.href='cat.html'">🐱 Kitty Only</button>
+        <button class="game-option" onclick="location.href='sheep.html'">🐑 Sheep Only</button>
+    </div>
 </body>
 </html>
