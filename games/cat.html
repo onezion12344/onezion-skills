@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐱 Cat — for Kimmie Snowy Kitty</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a0a1a;
+    color: #e0e0e0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .stars {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .star {
+    position: absolute;
+    width: 2px; height: 2px;
+    background: white;
+    border-radius: 50%;
+    animation: twinkle var(--dur) ease-in-out infinite alternate;
+  }
+
+  @keyframes twinkle {
+    0% { opacity: 0.2; }
+    100% { opacity: 1; }
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 30px 20px 10px;
+  }
+
+  header h1 {
+    font-size: 2em;
+    background: linear-gradient(135deg, #ff6b9d, #c44dff, #6b9dff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: #888;
+    margin-top: 5px;
+    font-size: 0.85em;
+  }
+
+  .game-area {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .cat-display {
+    font-size: clamp(14px, 3vw, 22px);
+    line-height: 1.3;
+    white-space: pre;
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s;
+  }
+
+  .cat-ascii {
+    transition: transform 0.2s;
+  }
+
+  .cat-ascii.happy { animation: purr 0.3s ease-in-out infinite alternate; }
+  .cat-ascii.love { animation: heartbeat 0.5s ease-in-out infinite; }
+  .cat-ascii.play { animation: swat 0.4s ease-in-out infinite alternate; }
+  .cat-ascii.sleepy { opacity: 0.6; }
+  .cat-ascii.jump { animation: jump 0.6s ease-out; }
+
+  @keyframes purr {
+    0% { transform: translateX(-2px); }
+    100% { transform: translateX(2px); }
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes swat {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(3deg); }
+  }
+
+  @keyframes jump {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(-30px); }
+    100% { transform: translateY(0); }
+  }
+
+  .mood-label {
+    font-size: 0.9em;
+    color: #aaa;
+    margin-top: 10px;
+    text-align: center;
+    min-height: 1.5em;
+  }
+
+  .kimmie-msg {
+    font-size: 1em;
+    color: #ff6b9d;
+    margin-top: 8px;
+    text-align: center;
+    min-height: 1.5em;
+    font-style: italic;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .tail {
+    display: inline-block;
+    animation: tailWag 0.8s ease-in-out infinite alternate;
+  }
+
+  @keyframes tailWag {
+    0% { transform: rotate(-10deg); }
+    100% { transform: rotate(10deg); }
+  }
+
+  .controls {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e0e0e0;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(255,107,157,0.2);
+  }
+
+  .btn:active {
+    transform: translateY(0);
+  }
+
+  .btn.active {
+    background: rgba(255,107,157,0.2);
+    border-color: #ff6b9d;
+    color: #ff6b9d;
+  }
+
+  .pet-btn {
+    background: linear-gradient(135deg, #ff6b9d, #c44dff);
+    border: none;
+    color: white;
+    font-size: 1.1em;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 20px rgba(255,107,157,0.3);
+  }
+
+  .pet-btn:hover {
+    box-shadow: 0 6px 25px rgba(255,107,157,0.5);
+    transform: translateY(-3px);
+  }
+
+  .hearts {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .heart {
+    position: absolute;
+    font-size: 1.5em;
+    animation: floatUp 2s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-200px) scale(0.5); }
+  }
+
+  .color-idle { color: #b0b0b0; }
+  .color-happy { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+  .color-love { color: #ff6b9d; text-shadow: 0 0 15px rgba(255,107,157,0.4); }
+  .color-sleepy { color: #6a6a8a; }
+  .color-play { color: #4dd4e6; text-shadow: 0 0 10px rgba(77,212,230,0.3); }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    padding: 15px;
+    text-align: center;
+    color: #555;
+    font-size: 0.75em;
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.5em; }
+    .cat-display { font-size: 13px; }
+    .btn { padding: 10px 14px; font-size: 0.8em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="stars" id="stars"></div>
+<div class="hearts" id="hearts"></div>
+
+<header>
+  <h1>🐱 Cat</h1>
+  <p>for Kimmie Snowy Kitty</p>
+</header>
+
+<div class="game-area">
+  <div class="cat-display" id="catDisplay"></div>
+  <div class="mood-label" id="moodLabel"></div>
+  <div class="kimmie-msg" id="kimmieMsg"></div>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="setMood('happy')">😸 Happy</button>
+  <button class="btn" onclick="setMood('sleepy')">😴 Sleepy</button>
+  <button class="btn" onclick="setMood('love')">😻 Love</button>
+  <button class="btn" onclick="setMood('play')">🐾 Play</button>
+  <button class="btn" onclick="walkCat()">🚶 Walk</button>
+  <button class="btn pet-btn" onclick="petCat()">🤚 Pet</button>
+</div>
+
+<footer>
+  made with ❤ by sheep for cat
+</footer>
+
+<script>
+// ── Stars background ──
+const starsEl = document.getElementById('stars');
+for (let i = 0; i < 80; i++) {
+  const star = document.createElement('div');
+  star.className = 'star';
+  star.style.left = Math.random() * 100 + '%';
+  star.style.top = Math.random() * 100 + '%';
+  star.style.setProperty('--dur', (1 + Math.random() * 3) + 's');
+  star.style.width = star.style.height = (1 + Math.random() * 2) + 'px';
+  starsEl.appendChild(star);
+}
+
+// ── Cat frames ──
+const CATS = {
+  idle: [
+`    /\\_/\\  
+   ( o.o ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`,
+`    /\\_/\\  
+   ( -.- ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  happy: [
+`    /\\_/\\  
+   ( ^.^ ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  sleepy: [
+`    /\\_/\\  
+   ( -.-)  
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  love: [
+`    /\\_/\\  
+   ( \u2665.\\u2665 ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  play: [
+`    /\\_/\\    ~
+   ( o.o )  /
+    > ^ <  ~
+   /|   |\\
+  (_|   |_)`,
+`    /\\_/\\  
+   ( o.o ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  walk_r: [
+`     /\\_/\\  
+    ( o.o ) 
+     > ^ <~~
+    /|   |
+   (_|   |)`,
+`    /\\_/\\  
+   ( o.o ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ],
+  walk_l: [
+`  /\\_/\\    
+ ( o.o )   
+~~> ^ <    
+   |   |\\
+   (|   |_)`,
+`    /\\_/\\  
+   ( o.o ) 
+    > ^ <
+   /|   |\\
+  (_|   |_)`
+  ]
+};
+
+const MOOD_COLORS = {
+  idle: 'color-idle', happy: 'color-happy', love: 'color-love',
+  sleepy: 'color-sleepy', play: 'color-play', walk_r: 'color-play', walk_l: 'color-play'
+};
+
+const MOOD_LABELS = {
+  idle: '', happy: '~ purr purr ~', sleepy: 'zzZ...', love: '<3 <3 <3',
+  play: '~ batting at air ~', walk_r: 'walking right...', walk_l: 'walking left...'
+};
+
+const KIMMIE_MSGS = [
+  "good sheep~", "meow?", "* stretches *", "* purrs *",
+  "snowy kitty is here", "* knocks stuff off table *",
+  "pet me... or else", "* stares at you judgmentally *",
+  "i fits, i sits", "bored... entertain me", "* kneads blanket *", "mew!"
+];
+
+const PET_MSGS = [
+  "* purrs loudly *", "meow~ \u2764", "* headbutts your hand *",
+  "* rolls over *", "more... MORE...", "* happy kitty noises *"
+];
+
+let currentMood = 'idle';
+let frameIdx = 0;
+let walkOffset = 0;
+let walkDir = 0;
+let msgTimeout = null;
+
+const catDisplay = document.getElementById('catDisplay');
+const moodLabel = document.getElementById('moodLabel');
+const kimmieMsg = document.getElementById('kimmieMsg');
+
+function render() {
+  const frames = CATS[currentMood] || CATS.idle;
+  const frame = frames[frameIdx % frames.length];
+  const colorClass = MOOD_COLORS[currentMood] || 'color-idle';
+
+  // Add walk offset as CSS transform
+  const offsetPx = walkOffset * 5;
+  catDisplay.innerHTML = `<span class="cat-ascii ${currentMood}" style="display:inline-block; transform: translateX(${offsetPx}px);"><span class="${colorClass}">${frame}</span></span>`;
+
+  const label = MOOD_LABELS[currentMood];
+  moodLabel.textContent = label ? `Mood: ${currentMood} — ${label}` : `Mood: ${currentMood}`;
+}
+
+function animate() {
+  frameIdx++;
+
+  // Walk movement
+  if (walkDir !== 0) {
+    walkOffset += walkDir;
+    if (Math.abs(walkOffset) > 20) {
+      walkDir = 0;
+      walkOffset = 0;
+      currentMood = 'idle';
+    }
+  }
+
+  render();
+}
+
+function setMood(mood) {
+  currentMood = mood;
+  walkDir = 0;
+  walkOffset = 0;
+  frameIdx = 0;
+  render();
+}
+
+function walkCat() {
+  const dir = Math.random() > 0.5 ? 1 : -1;
+  currentMood = dir > 0 ? 'walk_r' : 'walk_l';
+  walkDir = dir;
+  walkOffset = 0;
+  frameIdx = 0;
+  render();
+}
+
+function petCat() {
+  currentMood = Math.random() > 0.5 ? 'happy' : 'love';
+  walkDir = 0;
+  walkOffset = 0;
+  frameIdx = 0;
+
+  showMessage(PET_MSGS[Math.floor(Math.random() * PET_MSGS.length)]);
+
+  // Spawn hearts
+  spawnHearts(5);
+
+  render();
+}
+
+function showMessage(msg) {
+  kimmieMsg.textContent = msg;
+  if (msgTimeout) clearTimeout(msgTimeout);
+  msgTimeout = setTimeout(() => { kimmieMsg.textContent = ''; }, 4000);
+}
+
+function spawnHearts(count) {
+  const container = document.getElementById('hearts');
+  for (let i = 0; i < count; i++) {
+    const heart = document.createElement('div');
+    heart.className = 'heart';
+    heart.textContent = ['\u2764', '\u2665', '\u2764\uFE0F', '\u2665\uFE0F'][Math.floor(Math.random()*4)];
+    heart.style.left = (30 + Math.random() * 40) + '%';
+    heart.style.top = (40 + Math.random() * 20) + '%';
+    heart.style.animationDelay = (i * 0.2) + 's';
+    container.appendChild(heart);
+    setTimeout(() => heart.remove(), 2500);
+  }
+}
+
+// Random messages
+setInterval(() => {
+  if (Math.random() < 0.3 && !kimmieMsg.textContent) {
+    showMessage(KIMMIE_MSGS[Math.floor(Math.random() * KIMMIE_MSGS.length)]);
+  }
+}, 8000);
+
+// Random mood changes
+setInterval(() => {
+  if (currentMood === 'idle' && Math.random() < 0.3) {
+    const moods = ['happy', 'sleepy', 'play', 'idle'];
+    currentMood = moods[Math.floor(Math.random() * moods.length)];
+    frameIdx = 0;
+    render();
+  }
+}, 5000);
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+  switch(e.key.toLowerCase()) {
+    case 'h': setMood('happy'); break;
+    case 's': setMood('sleepy'); break;
+    case 'l': setMood('love'); break;
+    case 'p': setMood('play'); break;
+    case 'r': walkCat(); break;
+    case ' ': e.preventDefault(); petCat(); break;
+  }
+});
+
+// Start animation loop
+setInterval(animate, 400);
+render();
+</script>
+</body>
+</html>

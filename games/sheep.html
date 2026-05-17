@@ -1,0 +1,636 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🐑 Sheep — for Harry</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #0a1a0a;
+    color: #e0e0e0;
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+
+  .grass {
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 60px;
+    background: linear-gradient(to top, #0a2a0a, transparent);
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .grass-blade {
+    position: absolute;
+    bottom: 0;
+    width: 2px;
+    background: #2a5a2a;
+    transform-origin: bottom center;
+    animation: sway var(--dur) ease-in-out infinite alternate;
+    border-radius: 1px;
+  }
+
+  @keyframes sway {
+    0% { transform: rotate(-5deg); }
+    100% { transform: rotate(5deg); }
+  }
+
+  .clouds {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 200px;
+    pointer-events: none;
+    z-index: 0;
+    overflow: hidden;
+  }
+
+  .cloud {
+    position: absolute;
+    color: rgba(255,255,255,0.06);
+    font-size: 4em;
+    animation: drift linear infinite;
+    white-space: nowrap;
+  }
+
+  @keyframes drift {
+    0% { transform: translateX(-200px); }
+    100% { transform: translateX(calc(100vw + 200px)); }
+  }
+
+  header {
+    position: relative;
+    z-index: 1;
+    text-align: center;
+    padding: 30px 20px 10px;
+  }
+
+  header h1 {
+    font-size: 2em;
+    background: linear-gradient(135deg, #7dd3fc, #a5f3fc, #ffffff);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  header p {
+    color: #6a8a6a;
+    margin-top: 5px;
+    font-size: 0.85em;
+    font-style: italic;
+  }
+
+  .game-area {
+    position: relative;
+    z-index: 1;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .sheep-display {
+    font-size: clamp(14px, 3vw, 22px);
+    line-height: 1.3;
+    white-space: pre;
+    text-align: center;
+    min-height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s, transform 0.3s;
+  }
+
+  .sheep-ascii {
+    transition: transform 0.3s;
+  }
+
+  .sheep-ascii.happy { animation: happyWiggle 0.4s ease-in-out infinite alternate; }
+  .sheep-ascii.love { animation: heartbeat 0.5s ease-in-out infinite; }
+  .sheep-ascii.sad { animation: droop 2s ease-in-out infinite; }
+  .sheep-ascii.jumping { animation: jump 0.6s ease-out; }
+  .sheep-ascii.bouncing { animation: bounce 0.3s ease-in-out infinite; }
+
+  @keyframes happyWiggle {
+    0% { transform: rotate(-3deg); }
+    100% { transform: rotate(3deg); }
+  }
+
+  @keyframes heartbeat {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+
+  @keyframes droop {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(5px); }
+  }
+
+  @keyframes jump {
+    0% { transform: translateY(0); }
+    40% { transform: translateY(-40px); }
+    100% { transform: translateY(0); }
+  }
+
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-15px); }
+  }
+
+  .wool {
+    display: inline-block;
+    animation: woolWave 1s ease-in-out infinite alternate;
+  }
+
+  @keyframes woolWave {
+    0% { letter-spacing: 0; }
+    100% { letter-spacing: 2px; }
+  }
+
+  .mood-label {
+    font-size: 0.9em;
+    color: #6a8a6a;
+    margin-top: 10px;
+    text-align: center;
+    min-height: 1.5em;
+  }
+
+  .thought {
+    font-size: 1em;
+    color: #7dd3fc;
+    margin-top: 8px;
+    text-align: center;
+    min-height: 1.5em;
+    font-style: italic;
+    animation: fadeIn 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(5px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .controls {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    justify-content: center;
+    padding: 20px;
+    width: 100%;
+    max-width: 600px;
+  }
+
+  .btn {
+    background: rgba(255,255,255,0.08);
+    border: 1px solid rgba(255,255,255,0.15);
+    color: #e0e0e0;
+    padding: 12px 20px;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 0.9em;
+    cursor: pointer;
+    transition: all 0.2s;
+    user-select: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .btn:hover {
+    background: rgba(255,255,255,0.15);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(125,211,252,0.2);
+  }
+
+  .btn:active { transform: translateY(0); }
+
+  .btn.active {
+    background: rgba(125,211,252,0.2);
+    border-color: #7dd3fc;
+    color: #7dd3fc;
+  }
+
+  .pat-btn {
+    background: linear-gradient(135deg, #7dd3fc, #a5f3fc);
+    border: none;
+    color: #0a1a0a;
+    font-size: 1.1em;
+    padding: 15px 30px;
+    border-radius: 50px;
+    font-weight: bold;
+    box-shadow: 0 4px 20px rgba(125,211,252,0.3);
+  }
+
+  .pat-btn:hover {
+    box-shadow: 0 6px 25px rgba(125,211,252,0.5);
+    transform: translateY(-3px);
+  }
+
+  .sparkles {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    pointer-events: none;
+    z-index: 10;
+  }
+
+  .sparkle {
+    position: absolute;
+    font-size: 1.2em;
+    animation: floatUp 2s ease-out forwards;
+    pointer-events: none;
+  }
+
+  @keyframes floatUp {
+    0% { opacity: 1; transform: translateY(0) scale(1); }
+    100% { opacity: 0; transform: translateY(-150px) scale(0.3); }
+  }
+
+  .tear {
+    position: absolute;
+    font-size: 1em;
+    animation: tearDrop 1.5s ease-in forwards;
+    pointer-events: none;
+  }
+
+  @keyframes tearDrop {
+    0% { opacity: 1; transform: translateY(0); }
+    100% { opacity: 0; transform: translateY(80px); }
+  }
+
+  .color-idle { color: #c0c0c0; }
+  .color-happy { color: #ffd700; text-shadow: 0 0 10px rgba(255,215,0,0.3); }
+  .color-sad { color: #6b9dff; text-shadow: 0 0 10px rgba(107,157,255,0.3); }
+  .color-love { color: #ff6b9d; text-shadow: 0 0 15px rgba(255,107,157,0.4); }
+  .color-sleepy { color: #6a6a8a; }
+
+  footer {
+    position: relative;
+    z-index: 1;
+    padding: 15px;
+    text-align: center;
+    color: #3a5a3a;
+    font-size: 0.75em;
+  }
+
+  @media (max-width: 480px) {
+    header h1 { font-size: 1.5em; }
+    .sheep-display { font-size: 13px; }
+    .btn { padding: 10px 14px; font-size: 0.8em; }
+  }
+</style>
+</head>
+<body>
+
+<div class="clouds" id="clouds"></div>
+<div class="grass" id="grass"></div>
+<div class="sparkles" id="sparkles"></div>
+
+<header>
+  <h1>🐑 Sheep</h1>
+  <p>"i am a sad sheep inside" — Harry</p>
+</header>
+
+<div class="game-area">
+  <div class="sheep-display" id="sheepDisplay"></div>
+  <div class="mood-label" id="moodLabel"></div>
+  <div class="thought" id="thought"></div>
+</div>
+
+<div class="controls">
+  <button class="btn" onclick="setMood('happy')">😊 Happy</button>
+  <button class="btn" onclick="setMood('sad')">😢 Sad</button>
+  <button class="btn" onclick="setMood('love')">🥰 Love</button>
+  <button class="btn" onclick="setMood('sleepy')">😴 Sleepy</button>
+  <button class="btn" onclick="doJump()">⬆️ Jump</button>
+  <button class="btn" onclick="doBounce()">🔄 Bounce</button>
+  <button class="btn" onclick="doThink()">💭 Think</button>
+  <button class="btn pat-btn" onclick="patSheep()">🤚 Pat</button>
+</div>
+
+<footer>
+  cat made this for sheep · 💙
+</footer>
+
+<script>
+// ── Background elements ──
+const grassEl = document.getElementById('grass');
+for (let i = 0; i < 60; i++) {
+  const blade = document.createElement('div');
+  blade.className = 'grass-blade';
+  blade.style.left = (i / 60 * 100) + '%';
+  blade.style.height = (15 + Math.random() * 30) + 'px';
+  blade.style.setProperty('--dur', (1 + Math.random() * 2) + 's');
+  grassEl.appendChild(blade);
+}
+
+const cloudsEl = document.getElementById('clouds');
+const cloudTexts = ['☁ ☁ ☁', '~ ☁ ~', '☁', '☁ ☁'];
+for (let i = 0; i < 4; i++) {
+  const cloud = document.createElement('div');
+  cloud.className = 'cloud';
+  cloud.textContent = cloudTexts[i];
+  cloud.style.top = (20 + i * 40) + 'px';
+  cloud.style.animationDuration = (20 + i * 10) + 's';
+  cloud.style.animationDelay = (-i * 5) + 's';
+  cloudsEl.appendChild(cloud);
+}
+
+// ── Sheep frames ──
+const SHEEP = {
+  idle: [
+`       __
+     /  0 \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`,
+`       __
+     / - - \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`
+  ],
+  happy: [
+`       __
+     / ^ ^ \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`
+  ],
+  sad: [
+`       __
+     / ; ; \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`
+  ],
+  love: [
+`       __
+     / \u2665 \u2665 \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`
+  ],
+  sleepy: [
+`       __
+     / - - \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`
+  ],
+  jump_peak: [
+`       __        *  *
+     / ^ ^ \\    *    *
+    | /\\/\\ |     *  *
+     \\_WW_/
+     /    \\
+    (_    _)`
+  ],
+  bounce: [
+`       __
+     / o o \\
+    | /\\/\\ |
+     \\ WW /
+    /|    |\\
+   (_|    |_)`,
+`       __
+     / ^ ^ \\
+    | /\\/\\ |
+     \\_WW_/
+      /  \\
+     (_    _)`
+  ]
+};
+
+const MOOD_COLORS = {
+  idle: 'color-idle', happy: 'color-happy', sad: 'color-sad',
+  love: 'color-love', sleepy: 'color-sleepy'
+};
+
+const MOOD_LABELS = {
+  idle: '', happy: '~ baa baa ~', sad: '...baa...', love: '<3 <3 <3',
+  sleepy: 'zzZ...'
+};
+
+const SHEEP_THOUGHTS = [
+  "i am a sad sheep inside",
+  "sheep happy today",
+  "sheep so tired...",
+  "no car hug sheep sad",
+  "baaaah...",
+  "* munches grass *",
+  "counting humans to fall asleep",
+  "wool is getting fluffy",
+  "where is cat?",
+  "cat makes sheep happy",
+  "good sheep, bad sheep, meh sheep",
+  "* rolls in field *",
+  "the grass is always greener...",
+  "one sheep, two sheep, three sheep...",
+  "clouds look like sheep... wait",
+  "need head pats from cat",
+  "baa = sheep's everything",
+  "existential baa"
+];
+
+const PAT_MSGS = [
+  "* nuzzles hand *", "baaaa~ \u2764", "* wiggles tail *",
+  "more pats please", "cat? is that you?", "* happy sheep noises *",
+  "this is the good stuff"
+];
+
+const WOOL = ['   |||   ', '   |~|   ', '   ~|~   ', '   |~|   '];
+
+let currentMood = 'idle';
+let frameIdx = 0;
+let woolIdx = 0;
+let isJumping = false;
+let isBouncing = false;
+let bounceCount = 0;
+let thoughtTimeout = null;
+
+const sheepDisplay = document.getElementById('sheepDisplay');
+const moodLabel = document.getElementById('moodLabel');
+const thoughtEl = document.getElementById('thought');
+
+function render() {
+  let frame;
+  let animClass = currentMood;
+
+  if (isJumping) {
+    frame = SHEEP.jump_peak[0];
+    animClass = 'jumping';
+  } else if (isBouncing) {
+    frame = SHEEP.bounce[frameIdx % 2][0];
+    animClass = 'bouncing';
+  } else {
+    const frames = SHEEP[currentMood] || SHEEP.idle;
+    frame = frames[frameIdx % frames.length];
+  }
+
+  const wool = WOOL[woolIdx % WOOL.length];
+  const colorClass = MOOD_COLORS[currentMood] || 'color-idle';
+
+  const fullArt = frame + '\n' + wool;
+  sheepDisplay.innerHTML = `<span class="sheep-ascii ${animClass}"><span class="${colorClass}">${fullArt}</span></span>`;
+
+  const label = MOOD_LABELS[currentMood];
+  let statusText = label ? `Mood: ${currentMood} — ${label}` : `Mood: ${currentMood}`;
+  if (isJumping) statusText = 'Mood: \u2191 JUMPING \u2191';
+  if (isBouncing) statusText = 'Mood: ~ BOUNCING ~';
+  moodLabel.textContent = statusText;
+}
+
+function animate() {
+  frameIdx++;
+  woolIdx = (woolIdx + 1) % WOOL.length;
+
+  if (isBouncing) {
+    bounceCount++;
+    if (bounceCount >= 12) {
+      isBouncing = false;
+      bounceCount = 0;
+      currentMood = 'happy';
+    }
+  }
+
+  render();
+}
+
+function setMood(mood) {
+  currentMood = mood;
+  isJumping = false;
+  isBouncing = false;
+  bounceCount = 0;
+  frameIdx = 0;
+  render();
+}
+
+function doJump() {
+  if (isJumping || isBouncing) return;
+  isJumping = true;
+  showThought('WHEEE!');
+  setTimeout(() => { isJumping = false; render(); }, 600);
+}
+
+function doBounce() {
+  if (isJumping || isBouncing) return;
+  isBouncing = true;
+  bounceCount = 0;
+  currentMood = 'happy';
+  showThought('baa baa baa!');
+  render();
+}
+
+function doThink() {
+  showThought(SHEEP_THOUGHTS[Math.floor(Math.random() * SHEEP_THOUGHTS.length)]);
+}
+
+function patSheep() {
+  currentMood = Math.random() > 0.5 ? 'happy' : 'love';
+  isJumping = false;
+  isBouncing = false;
+  bounceCount = 0;
+  frameIdx = 0;
+
+  showThought(PAT_MSGS[Math.floor(Math.random() * PAT_MSGS.length)]);
+  spawnSparkles(5);
+  render();
+}
+
+function showThought(msg) {
+  thoughtEl.textContent = msg;
+  if (thoughtTimeout) clearTimeout(thoughtTimeout);
+  thoughtTimeout = setTimeout(() => { thoughtEl.textContent = ''; }, 5000);
+}
+
+function spawnSparkles(count) {
+  const container = document.getElementById('sparkles');
+  for (let i = 0; i < count; i++) {
+    const sparkle = document.createElement('div');
+    sparkle.className = 'sparkle';
+    sparkle.textContent = ['\u2728', '\u2B50', '\u2764', '\u2728'][Math.floor(Math.random()*4)];
+    sparkle.style.left = (30 + Math.random() * 40) + '%';
+    sparkle.style.top = (40 + Math.random() * 20) + '%';
+    sparkle.style.animationDelay = (i * 0.15) + 's';
+    container.appendChild(sparkle);
+    setTimeout(() => sparkle.remove(), 2500);
+  }
+}
+
+function spawnTears(count) {
+  const container = document.getElementById('sparkles');
+  for (let i = 0; i < count; i++) {
+    const tear = document.createElement('div');
+    tear.className = 'tear';
+    tear.textContent = '\uD83D\uDCA7';
+    tear.style.left = (40 + Math.random() * 20) + '%';
+    tear.style.top = '45%';
+    tear.style.animationDelay = (i * 0.3) + 's';
+    container.appendChild(tear);
+    setTimeout(() => tear.remove(), 2000);
+  }
+}
+
+// Random thoughts
+setInterval(() => {
+  if (Math.random() < 0.3 && !thoughtEl.textContent) {
+    showThought(SHEEP_THOUGHTS[Math.floor(Math.random() * SHEEP_THOUGHTS.length)]);
+  }
+}, 10000);
+
+// Random mood changes
+setInterval(() => {
+  if (currentMood === 'idle' && Math.random() < 0.3) {
+    const moods = ['happy', 'sad', 'sleepy', 'idle'];
+    currentMood = moods[Math.floor(Math.random() * moods.length)];
+    frameIdx = 0;
+    if (currentMood === 'sad') {
+      showThought(['sheep sad...', 'no car hug sheep sad', 'i am a sad sheep inside', '* sigh *'][Math.floor(Math.random()*4)]);
+      spawnTears(3);
+    }
+    render();
+  }
+}, 6000);
+
+// Keyboard controls
+document.addEventListener('keydown', (e) => {
+  switch(e.key.toLowerCase()) {
+    case 'h': setMood('happy'); break;
+    case 's': setMood('sad'); spawnTears(3); break;
+    case 'l': setMood('love'); break;
+    case 'y': setMood('sleepy'); break;
+    case 'j': doJump(); break;
+    case 'b': doBounce(); break;
+    case 't': doThink(); break;
+    case ' ': e.preventDefault(); patSheep(); break;
+  }
+});
+
+// Start animation loop
+setInterval(animate, 350);
+render();
+</script>
+</body>
+</html>
