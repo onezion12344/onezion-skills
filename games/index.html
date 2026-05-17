@@ -3,93 +3,76 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Kitty and Sheep Games</title>
+    <title>Kitty and Sheep</title>
     <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            margin: 0;
-            padding: 20px;
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(180deg, #fef6fb 0%, #fff 50%, #f0f4ff 100%);
             min-height: 100vh;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
+            justify-content: center;
+            padding: 20px;
         }
-        
-        .container {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
-            text-align: center;
-            max-width: 600px;
-            width: 100%;
+        h1 { color: #c0392b; font-size: 2em; margin-bottom: 6px; }
+        .subtitle { color: #999; margin-bottom: 24px; font-size: 0.85em; }
+
+        .buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            align-items: center;
+            margin-bottom: 18px;
         }
-        
-        h1 {
-            color: #333;
-            margin-bottom: 20px;
-            font-size: 2.5em;
-        }
-        
-        .game-option {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
+        .btn {
             border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-size: 1.2em;
+            padding: 14px 36px;
+            border-radius: 25px;
+            font-size: 1em;
             cursor: pointer;
-            margin: 10px;
-            transition: transform 0.3s, box-shadow 0.3s;
+            font-weight: 600;
+            transition: all 0.25s;
+            text-decoration: none;
+            color: white;
             display: inline-block;
         }
-
-        .game-option.together {
-            background: linear-gradient(135deg, #f093fb 0%, #f5576c 40%, #11998e 100%);
-            padding: 18px 36px;
-            font-size: 1.35em;
+        .btn-together {
+            background: linear-gradient(135deg, #ff6b81, #ee5a6f);
+            font-size: 1.15em;
+            padding: 16px 40px;
         }
-        
-        .game-option:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        .btn-solo {
+            background: #eee;
+            color: #888;
+            font-size: 0.85em;
+            padding: 8px 24px;
         }
-        
-        .game-option:active {
-            transform: translateY(1px);
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
         }
-        
-        .subtitle {
-            color: #666;
-            margin-bottom: 30px;
-            font-size: 1.1em;
-        }
-        
-        .kitty-sheep {
-            font-size: 3em;
-            margin: 20px 0;
-            animation: bounce 2s infinite;
-        }
-        
-        @keyframes bounce {
-            0%, 100% { transform: translateY(0); }
-            50% { transform: translateY(-10px); }
+        .divider {
+            color: #ccc;
+            font-size: 0.78em;
+            margin: 8px 0;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>Kitty and Sheep Games</h1>
-        <div class="kitty-sheep">🐱🐑</div>
-        <p class="subtitle">Choose your adventure!</p>
+    <h1>🐱 Kitty & Sheep 🐑</h1>
+    <p class="subtitle">for Kimmie and Harry</p>
 
-        <button class="game-option together" onclick="location.href='kitty-and-sheep.html'">🐱 Play with Kitty and Sheep 🐑</button>
+    <div class="buttons">
+        <a href="kitty-and-sheep.html" class="btn btn-together">🤗 Play with Kitty and Sheep</a>
+    </div>
 
-        <div style="margin: 18px 0; color: #aaa;">— or play separately —</div>
+    <div class="divider">— or —</div>
 
-        <button class="game-option" onclick="location.href='cat.html'">🐱 Kitty Only</button>
-        <button class="game-option" onclick="location.href='sheep.html'">🐑 Sheep Only</button>
+    <div class="buttons">
+        <a href="cat.html" class="btn btn-solo">🐱 Kitty</a>
+        <a href="sheep.html" class="btn btn-solo">🐑 Sheep</a>
     </div>
 </body>
 </html>
