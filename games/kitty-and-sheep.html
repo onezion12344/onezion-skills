@@ -75,6 +75,14 @@
             100% { transform: translateY(0); }
         }
 
+        .ride-reveal {
+            animation: fadeScaleIn 0.5s ease-out;
+        }
+        @keyframes fadeScaleIn {
+            0% { opacity: 0; transform: scale(0.7); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+
         .char-art {
             font-family: 'Courier New', monospace;
             font-size: 14px;
@@ -160,6 +168,10 @@
             background: #f5f5f5;
             color: #555;
         }
+        .btn-ride {
+            background: linear-gradient(135deg, #a8e6cf, #7ecba1);
+            color: #2e7d32;
+        }
         .btn:hover {
             transform: translateY(-2px);
             box-shadow: 0 3px 12px rgba(0,0,0,0.12);
@@ -227,6 +239,19 @@
  {_|     |_}</span></pre>
                 <span class="char-name sheep-name">Sheep 🐑</span>
             </div>
+            <div class="character" id="rideScene" style="display:none;">
+                <pre class="char-art">
+    /\_/\  
+   ( ^ ^ ) 
+    > ^ <
+   @   @
+  ( ^ ^ )
+   > ^ <
+  {/     \}
+  {_|     |_}</pre>
+                <span class="char-name kitty-name" style="margin-right:5px;">Kitty 🐱</span>
+                <span class="char-name sheep-name">on Sheep 🐑</span>
+            </div>
         </div>
 
         <div class="quote-bubble" id="quoteBubble"></div>
@@ -237,6 +262,7 @@
             <button class="btn btn-hug" onclick="hug()" id="hugBtn">🤗 Hug</button>
             <button class="btn btn-chat" onclick="chat()">💬 Chat</button>
             <button class="btn btn-play" onclick="play()">🎮 Play</button>
+            <button class="btn btn-ride" onclick="ride()">🐑 Ride</button>
         </div>
 
         <div class="message-log" id="log"></div>
@@ -247,6 +273,7 @@ let hugCount = 0;
 let logEl, quoteBubble, hugCounter, gameArea;
 let kittyChar, sheepChar;
 let huggable = true;
+let rideable = true;
 
 // Sheep mood: eyes change
 function setSheepMood(mood) {
@@ -393,6 +420,41 @@ function play() {
     // Show a playful quote
     const playful = quotes.filter(q => !q.text.toLowerCase().includes('hug') && !q.text.toLowerCase().includes('sad'));
     showQuote(playful[Math.floor(Math.random() * playful.length)]);
+}
+
+function ride() {
+    if (!rideable) return;
+    rideable = false;
+    kittyChar.style.display = 'none';
+    sheepChar.style.display = 'none';
+    const rideEl = document.getElementById('rideScene');
+    rideEl.style.display = 'block';
+    rideEl.classList.remove('ride-reveal');
+    void rideEl.offsetWidth;
+    rideEl.classList.add('ride-reveal');
+
+    setSheepMood('happy');
+    spawnHearts(8);
+
+    const rides = [
+        "Kitty climbs onto Sheep's back. Sheep stands tall and steady.",
+        "Sheep carries Kitty gently across the field. Kitty's tail sways.",
+        "Kitty wraps her paws around Sheep's neck. Sheep bleats happily.",
+        "Sheep lies down so Kitty can curl up on his belly. Warm.",
+        "Kitty perches on Sheep's shoulders like a little captain.",
+        "Sheep trots around with Kitty on his back. Best taxi ever.",
+    ];
+    log(rides[Math.floor(Math.random() * rides.length)]);
+
+    showQuote({ text: "Carry me, sheep", who: "Kimmie (Kitty)" });
+
+    setTimeout(() => {
+        kittyChar.style.display = '';
+        sheepChar.style.display = '';
+        setSheepMood('relaxed');
+        rideEl.style.display = 'none';
+        rideable = true;
+    }, 6000);
 }
 </script>
 </body>
