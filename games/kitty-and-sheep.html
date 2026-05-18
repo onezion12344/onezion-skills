@@ -220,8 +220,8 @@
                 <span class="char-name kitty-name">Kitty 🐱</span>
             </div>
             <div class="character" id="sheepChar">
-                <pre class="char-art"><span style="color:#5b9bd5">   @   @</span>
-  ( o.o )
+                <pre class="char-art" id="sheepArt"><span style="color:#5b9bd5">   @   @</span>
+  (<span id="sheepEyes"> v v </span>)
    > ^ <span style="color:#d4a017">
  {/     \}
  {_|     |_}</span></pre>
@@ -247,6 +247,19 @@ let hugCount = 0;
 let logEl, quoteBubble, hugCounter, gameArea;
 let kittyChar, sheepChar;
 let huggable = true;
+
+// Sheep mood: eyes change
+function setSheepMood(mood) {
+    const eyes = document.getElementById('sheepEyes');
+    if (!eyes) return;
+    if (mood === 'happy') {
+        eyes.textContent = ' ^ ^ ';
+        eyes.style.color = '#e91e63';
+    } else {
+        eyes.textContent = ' v v ';
+        eyes.style.color = '';
+    }
+}
 
 document.addEventListener('DOMContentLoaded', () => {
     logEl = document.getElementById('log');
@@ -333,6 +346,7 @@ function hug() {
     hugCount++;
     hugCounter.textContent = `💕 ${hugCount} hugs`;
 
+    setSheepMood('happy');
     animateBoth('hugging', 600);
     spawnHearts(12);
 
@@ -352,6 +366,7 @@ function hug() {
     showQuote(hugQuotes[Math.floor(Math.random() * hugQuotes.length)]);
 
     setTimeout(() => { huggable = true; }, 1200);
+    setTimeout(() => { setSheepMood('relaxed'); }, 4000);
 }
 
 function chat() {
