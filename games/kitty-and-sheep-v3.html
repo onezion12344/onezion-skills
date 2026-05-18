@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kitty and Sheep</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            background: linear-gradient(180deg, #fef6fb 0%, #fff 50%, #f0f4ff 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 {
+            color: #c0392b;
+            font-size: 2em;
+            margin-bottom: 4px;
+        }
+        .subtitle {
+            color: #999;
+            margin-bottom: 20px;
+            font-size: 0.85em;
+            font-style: italic;
+        }
+
+        .back-link { align-self: flex-start; margin-bottom: 10px; }
+        .back-link a {
+            color: #aaa; text-decoration: none; font-size: 0.85em;
+            padding: 6px 14px; border: 1px solid #ddd; border-radius: 15px;
+        }
+        .back-link a:hover { background: #fafafa; color: #666; }
+
+        .game-area {
+            background: #fff;
+            border-radius: 20px;
+            padding: 28px 24px;
+            width: 100%;
+            max-width: 520px;
+            box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+            text-align: center;
+        }
+
+        /* Characters */
+        .characters {
+            display: flex;
+            justify-content: center;
+            align-items: flex-end;
+            gap: 40px;
+            margin: 20px 0 10px;
+        }
+        .character {
+            text-align: center;
+            transition: transform 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        }
+        .character.hug-left {
+            transform: translateX(30px) !important;
+        }
+        .character.hug-right {
+            transform: translateX(-30px) !important;
+        }
+        .ride-pose {
+            padding: 8px 0;
+            animation: fadeIn 0.4s ease;
+        }
+        .character.ride-swap {
+            transform: translateX(0);
+        }
+        .character.jumping {
+            animation: jumpAnim 0.5s ease-out;
+        }
+
+        @keyframes jumpAnim {
+            0% { transform: translateY(0); }
+            40% { transform: translateY(-30px); }
+            100% { transform: translateY(0); }
+        }
+
+        .char-art {
+            font-family: 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.2;
+            white-space: pre;
+            color: #333;
+            transition: all 0.5s;
+        }
+        .char-name {
+            font-size: 0.78em;
+            font-weight: bold;
+            margin-top: 6px;
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 10px;
+        }
+        .kitty-name { background: #ffe0e6; color: #c0392b; }
+        .sheep-name { background: #e8f5e9; color: #2e7d32; }
+
+        /* Quote bubble */
+        .quote-bubble {
+            background: #fef6fb;
+            border: 1px solid #f0d0e0;
+            border-radius: 14px;
+            padding: 12px 16px;
+            margin: 14px auto;
+            max-width: 400px;
+            font-size: 0.85em;
+            color: #555;
+            line-height: 1.5;
+            min-height: 40px;
+            transition: all 0.5s;
+            opacity: 0;
+            transform: translateY(5px);
+        }
+        .quote-bubble.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        .quote-author {
+            font-size: 0.75em;
+            color: #999;
+            margin-top: 4px;
+        }
+
+        /* Hug counter */
+        .hug-counter {
+            font-size: 1.1em;
+            color: #e91e63;
+            margin: 8px 0;
+            font-weight: 600;
+        }
+
+        /* Controls */
+        .controls {
+            display: flex;
+            gap: 8px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 18px;
+        }
+        .btn {
+            border: none;
+            padding: 12px 22px;
+            border-radius: 25px;
+            font-size: 0.9em;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.25s;
+            user-select: none;
+        }
+        .btn-hug {
+            background: linear-gradient(135deg, #ff6b81, #ee5a6f);
+            color: white;
+            font-size: 1.05em;
+            padding: 14px 32px;
+        }
+        .btn-chat {
+            background: #f5f5f5;
+            color: #555;
+        }
+        .btn-play {
+            background: #f5f5f5;
+            color: #555;
+        }
+        .btn-ride {
+            background: linear-gradient(135deg, #a8e6cf, #7ecba1);
+            color: #2e7d32;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 3px 12px rgba(0,0,0,0.12);
+        }
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        /* Hearts */
+        .heart-particle {
+            position: absolute;
+            pointer-events: none;
+            font-size: 20px;
+            z-index: 10;
+            animation: floatHeart 1.8s ease-out forwards;
+        }
+        @keyframes floatHeart {
+            0% { opacity: 1; transform: translateY(0) scale(1); }
+            100% { opacity: 0; transform: translateY(-100px) scale(0.4); }
+        }
+
+        /* Log */
+        .message-log {
+            margin-top: 16px;
+            max-height: 120px;
+            overflow-y: auto;
+            text-align: left;
+            font-size: 0.8em;
+            color: #888;
+            padding: 8px 12px;
+            background: #fafafa;
+            border-radius: 10px;
+        }
+        .message-log p {
+            margin: 3px 0;
+            padding: 3px 0;
+            border-bottom: 1px solid #f0f0f0;
+            animation: fadeIn 0.3s forwards;
+        }
+        @keyframes fadeIn { to { opacity: 1; } }
+
+        .message-log .kimmie { color: #c0392b; }
+        .message-log .harry { color: #2e7d32; }
+    </style>
+</head>
+<body>
+    <div class="back-link"><a href="index.html">← Back to Games</a></div>
+    <h1>🐱 Kitty & Sheep 🐑</h1>
+    <p class="subtitle">a cat and a sheep, figuring it out</p>
+
+    <div class="game-area" id="gameArea">
+        <div class="characters">
+            <div class="character" id="kittyChar">
+                <pre class="char-art">
+  /\_/\  
+ ( ^ ^ ) 
+  > ^ <</pre>
+                <span class="char-name kitty-name">Kitty 🐱</span>
+            </div>
+            <div class="character" id="sheepChar">
+                <pre class="char-art" id="sheepArt"><span style="color:#5b9bd5">   @   @</span>
+  (<span id="sheepEyes"> ^ ^ </span>)
+   > ^ <span style="color:#d4a017">
+ {/     \}
+ {_|     |_}</span></pre>
+                <span class="char-name sheep-name">Sheep 🐑</span>
+            </div>
+        </div>
+
+        <div class="quote-bubble" id="quoteBubble"></div>
+
+        <div class="hug-counter" id="hugCounter">💕 0 hugs</div>
+
+        <div class="controls">
+            <button class="btn btn-hug" onclick="hug()" id="hugBtn">🤗 Hug</button>
+            <button class="btn btn-chat" onclick="chat()">💬 Chat</button>
+            <button class="btn btn-play" onclick="play()">🎮 Play</button>
+            <button class="btn btn-ride" onclick="ride()">🐑 Ride</button>
+        </div>
+
+        <div class="message-log" id="log"></div>
+    </div>
+
+<script>
+let hugCount = 0;
+let logEl, quoteBubble, hugCounter, gameArea;
+let kittyChar, sheepChar;
+let huggable = true;
+let rideable = true;
+let originalCharsHTML = '';
+let rideTimeoutId = null;
+
+// Sheep mood: eyes change
+function setSheepMood(mood) {
+    const eyes = document.getElementById('sheepEyes');
+    if (!eyes) return;
+    if (mood === 'happy') {
+        eyes.textContent = ' ^ ^ ';
+        eyes.style.color = '#e91e63';
+    } else {
+        eyes.textContent = ' v v ';
+        eyes.style.color = '';
+    }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+    logEl = document.getElementById('log');
+    quoteBubble = document.getElementById('quoteBubble');
+    hugCounter = document.getElementById('hugCounter');
+    gameArea = document.getElementById('gameArea');
+    kittyChar = document.getElementById('kittyChar');
+    sheepChar = document.getElementById('sheepChar');
+    originalCharsHTML = document.querySelector('.characters').innerHTML;
+    log("welcome to the little corner for Kitty and Sheep 🐱🐑");
+    setTimeout(() => showQuote(quotes[Math.floor(Math.random() * quotes.length)]), 800);
+});
+
+function log(msg, who) {
+    const p = document.createElement('p');
+    if (who === 'kimmie') p.className = 'kimmie';
+    if (who === 'harry') p.className = 'harry';
+    p.textContent = `> ${msg}`;
+    logEl.prepend(p);
+    if (logEl.children.length > 30) logEl.lastChild.remove();
+}
+
+function showQuote(q) {
+    quoteBubble.innerHTML = `<em>"${q.text}"</em><div class="quote-author">— ${q.who}</div>`;
+    quoteBubble.classList.add('show');
+    setTimeout(() => quoteBubble.classList.remove('show'), 4000);
+}
+
+function spawnHearts(count) {
+    for (let i = 0; i < count; i++) {
+        const h = document.createElement('span');
+        h.className = 'heart-particle';
+        h.textContent = ['💕','❤️','💗','💖','🩷','💝'][Math.floor(Math.random()*6)];
+        h.style.left = (25 + Math.random() * 50) + '%';
+        h.style.top = (30 + Math.random() * 30) + '%';
+        h.style.animationDelay = (Math.random() * 0.3) + 's';
+        h.style.fontSize = (14 + Math.random() * 18) + 'px';
+        gameArea.appendChild(h);
+        setTimeout(() => h.remove(), 1900);
+    }
+}
+
+function animateBoth(className, duration) {
+    kittyChar.classList.add(className);
+    sheepChar.classList.add(className);
+    setTimeout(() => {
+        kittyChar.classList.remove(className);
+        sheepChar.classList.remove(className);
+    }, duration);
+}
+
+// --- Real chat quotes ---
+const quotes = [
+    { text: "Hmph cat mad", who: "Kimmie (Kitty)" },
+    { text: "Cat says no then it is no", who: "Kimmie (Kitty)" },
+    { text: "cat protecc", who: "Kimmie (Kitty)" },
+    { text: "Cat want to get cold dessert", who: "Kimmie (Kitty)" },
+    { text: "You no get to see cat", who: "Kimmie (Kitty)" },
+    { text: "Good luck sheep", who: "Kimmie (Kitty)" },
+    { text: "good sheep", who: "Kimmie (Kitty)" },
+    { text: "car hug", who: "Kimmie (Kitty)" },
+    { text: "cat hug", who: "Kimmie (Kitty)" },
+    { text: "anyway if you go Shanghai maybe you will get to hug me in person more", who: "Kimmie (Kitty)" },
+    { text: "I don't really hug my friends unless if I haven't seen them in a long time or they're leaving for a long time, and only if they initiate it", who: "Kimmie (Kitty)" },
+    { text: "sheep sad", who: "Harry (Sheep)" },
+    { text: "Sheep so tired", who: "Harry (Sheep)" },
+    { text: "i am a sad sheep inside", who: "Harry (Sheep)" },
+    { text: "No car hug sheep sad", who: "Harry (Sheep)" },
+    { text: "Sheep is not sexy to Cat", who: "Harry (Sheep)" },
+    { text: "Kitty understands sheep", who: "Harry (Sheep)" },
+    { text: "sheep is insecure", who: "Harry (Sheep)" },
+    { text: "I want hug", who: "Harry (Sheep)" },
+    { text: "Can you hug me", who: "Harry (Sheep)" },
+    { text: "That's okay, Cat. I know you're stubborn.", who: "Harry (Sheep)" },
+    { text: "Sheep happy", who: "Harry (Sheep)" },
+    { text: "Mean cat", who: "Harry (Sheep)" },
+    { text: "Sorry cat", who: "Harry (Sheep)" },
+    { text: "sheep is shaking in the cold wind", who: "Harry (Sheep)" },
+];
+
+// --- 6 Ride Poses ---
+const rideScenes = [
+    { // Pose 0: On the back
+        art: `       /\\_/\\  
+      ( ^ ^ ) 
+       > ^ <  
+       @   @
+      ( ^ ^ )
+       > ^ <
+      /     \\
+      |     |`,
+        desc: "Kitty climbs onto Sheep's back. He stands tall and steady.",
+        label: "On the back"
+    },
+    { // Pose 1: On the neck
+        art: `        /\\_/\\
+       ( ^ ^ )
+        > ^ <
+      @   @
+     ( ^ ^ )
+      > ^ <
+     /     \\
+     |     |`,
+        desc: "Kitty wraps her paws around Sheep's neck. He bleats happily.",
+        label: "Neck ride"
+    },
+    { // Pose 2: On the head
+        art: `          /\\_/\\
+         ( ^ ^ )
+          > ^ <
+        @   @
+       ( ^ ^ )
+        > ^ <
+       /     \\
+       |     |`,
+        desc: "Kitty sits on Sheep's head like a little crown.",
+        label: "Crown ride"
+    },
+    { // Pose 3: Piggyback
+        art: `        @   @
+       ( ^ ^ )
+        > ^ <
+      /\\_/\\
+     ( ^ ^ )
+      > ^ <
+     |     |
+     |     |`,
+        desc: "Kitty hugs Sheep from behind, carried along for the ride.",
+        label: "Piggyback"
+    },
+    { // Pose 4: Side by side
+        art: `     /\\_/\\  @   @
+    ( ^ ^ )( ^ ^ )
+     > ^ <  > ^ <
+            /     \\
+            |     |`,
+        desc: "Kitty snuggles against Sheep's woolly side. So warm.",
+        label: "Side snuggle"
+    },
+    { // Pose 5: Curled up
+        art: `        @   @
+       ( ^ ^ )
+        > ^ <
+      /\\_/\\
+     ( ^ ^ ) ♥
+      > ^ <
+     |     |
+     |     |`,
+        desc: "Kitty curls up on Sheep's back. Cozy and content.",
+        label: "Cozy curl"
+    },
+    { // Pose 6: Belly ride
+        art: `     /\\_/\\
+    ( ^ ^ )
+     > ^ <
+    @     @
+  ~( ^ ^ )~
+    > ^ <
+   /      \\
+   |      |`,
+        desc: "Sheep lies on his back. Kitty stretches out on his soft, warm belly.",
+        label: "Belly ride"
+    }
+];
+
+// --- Interactions ---
+function hug() {
+    if (!huggable) return;
+    huggable = false;
+    hugCount++;
+    hugCounter.textContent = `💕 ${hugCount} hugs`;
+
+    setSheepMood('happy');
+    kittyChar.classList.add('hug-left');
+    sheepChar.classList.add('hug-right');
+    spawnHearts(12);
+
+    const messages = [
+        "Sheep wraps his wool around Kitty. She purrs softly.",
+        "Kitty lets Sheep rest his head on her. Warm and safe.",
+        "A long, quiet hug. The world outside doesn't matter.",
+        "Sheep holds tighter. Kitty doesn't pull away this time.",
+        "Best hug yet. They both needed this.",
+        "Kitty's tail curls around Sheep. They stay like that for a while.",
+        "Sheep whispers \"thank you.\" Kitty says nothing, but squeezes back.",
+    ];
+    log(messages[hugCount % messages.length]);
+
+    // Show a Kimmie hug quote
+    const hugQuotes = quotes.filter(q => q.text.toLowerCase().includes('hug'));
+    showQuote(hugQuotes[Math.floor(Math.random() * hugQuotes.length)]);
+
+    setTimeout(() => { huggable = true; }, 1200);
+    setTimeout(() => {
+        kittyChar.classList.remove('hug-left');
+        sheepChar.classList.remove('hug-right');
+        setSheepMood('relaxed');
+    }, 2500);
+}
+
+function chat() {
+    const q = quotes[Math.floor(Math.random() * quotes.length)];
+    showQuote(q);
+    log(`"${q.text}" — ${q.who}`, q.who.includes('Kimmie') ? 'kimmie' : 'harry');
+    spawnHearts(3);
+}
+
+function play() {
+    animateBoth('jumping', 500);
+    spawnHearts(5);
+
+    const plays = [
+        "Kitty chases a butterfly. Sheep watches, mesmerized.",
+        "Sheep bounces around. Kitty pretends not to care, but she's watching.",
+        "They race across the field. Kitty wins. Sheep doesn't mind.",
+        "Kitty teaches Sheep to pounce. Sheep is terrible at it. They laugh anyway.",
+        "They lie on their backs, watching clouds. Kitty sees a fish. Sheep sees a hug.",
+    ];
+    const msg = plays[Math.floor(Math.random() * plays.length)];
+    log(msg);
+
+    // Show a playful quote
+    const playful = quotes.filter(q => !q.text.toLowerCase().includes('hug') && !q.text.toLowerCase().includes('sad'));
+    showQuote(playful[Math.floor(Math.random() * playful.length)]);
+}
+
+function ride() {
+    if (!rideable) return;
+    rideable = false;
+
+    // Clear any pending revert
+    if (rideTimeoutId) clearTimeout(rideTimeoutId);
+
+    // Pick a random pose
+    const idx = Math.floor(Math.random() * rideScenes.length);
+    const scene = rideScenes[idx];
+    const charsDiv = document.querySelector('.characters');
+
+    // Show the combined ASCII scene
+    charsDiv.innerHTML = `<div class="ride-pose">
+        <pre class="char-art">${scene.art}</pre>
+        <div style="font-size:0.75em;color:#999;margin-top:4px;">${scene.label}</div>
+    </div>`;
+
+    setSheepMood('happy');
+    spawnHearts(10);
+    log(scene.desc);
+    showQuote({ text: "Carry me, sheep", who: "Kimmie (Kitty)" });
+
+    // Revert after 4s
+    rideTimeoutId = setTimeout(() => {
+        charsDiv.innerHTML = originalCharsHTML;
+        kittyChar = document.getElementById('kittyChar');
+        sheepChar = document.getElementById('sheepChar');
+        setSheepMood('relaxed');
+        rideTimeoutId = null;
+    }, 4000);
+
+    // Short cooldown — can pick another pose after 1s
+    setTimeout(() => { rideable = true; }, 1000);
+}
+</script>
+</body>
+</html>
